@@ -1,12 +1,13 @@
-package com.Dodutch_Server.domain.member.domain;
+package com.Dodutch_Server.domain.member.entity;
 
-import com.Dodutch_Server.domain.trip.domain.TripMember;
+import com.Dodutch_Server.domain.trip.entity.TripMember;
+import com.Dodutch_Server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import java.util.List;
 import java.util.ArrayList;
 
 @Entity
-public class Member {
+public class Member extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

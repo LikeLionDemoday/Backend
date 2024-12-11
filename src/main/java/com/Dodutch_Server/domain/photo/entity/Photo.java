@@ -1,10 +1,11 @@
-package com.Dodutch_Server.domain.photo.domain;
+package com.Dodutch_Server.domain.photo.entity;
 
-import com.Dodutch_Server.domain.expense.domain.Expense;
+import com.Dodutch_Server.domain.expense.entity.Expense;
+import com.Dodutch_Server.global.common.BaseEntity;
 import jakarta.persistence.*;
 
 @Entity
-public class Photo {
+public class Photo extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

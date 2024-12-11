@@ -1,6 +1,6 @@
-package com.Dodutch_Server.domain.trip.dao;
+package com.Dodutch_Server.domain.trip.repository;
 
-import com.Dodutch_Server.domain.trip.domain.TripMember;
+import com.Dodutch_Server.domain.trip.entity.TripMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,12 +1,13 @@
-package com.Dodutch_Server.domain.trip.domain;
+package com.Dodutch_Server.domain.trip.entity;
 
+import com.Dodutch_Server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
 
 @Entity
-public class Trip {
+public class Trip extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
