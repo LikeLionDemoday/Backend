@@ -1,6 +1,6 @@
-package com.Dodutch_Server.domain.dutch.dao;
+package com.Dodutch_Server.domain.dutch.repository;
 
-import com.Dodutch_Server.domain.dutch.domain.Dutch;
+import com.Dodutch_Server.domain.dutch.entity.Dutch;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

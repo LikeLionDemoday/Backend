@@ -1,10 +1,11 @@
-package com.Dodutch_Server.domain.expense.domain;
+package com.Dodutch_Server.domain.expense.entity;
 
-import com.Dodutch_Server.domain.trip.domain.TripMember;
+import com.Dodutch_Server.domain.trip.entity.TripMember;
+import com.Dodutch_Server.global.common.BaseEntity;
 import jakarta.persistence.*;
 
 @Entity
-public class ExpenseMember {
+public class ExpenseMember extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
