@@ -10,9 +10,9 @@ public class Expense {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long content;
+    private String content;
     private Integer cost;
-    private Long category;
+    private String category;
     private LocalDate expenseDate;
 
     @ManyToOne

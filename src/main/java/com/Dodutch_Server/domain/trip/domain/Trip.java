@@ -10,13 +10,13 @@ public class Trip {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long name;
-    private Long place;
+    private String name;
+    private String place;
     private LocalDate startDate;
     private LocalDate endDate;
     private Integer budget;
     private Integer totalCost;
-    private Long password;
+    private String password;
 
     @OneToMany(mappedBy = "trip")
     private List<TripMember> tripMembers = new ArrayList<>();

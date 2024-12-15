@@ -8,7 +8,7 @@ public class Photo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long photoUrl;
+    private String photoUrl;
 
     @ManyToOne
     @JoinColumn(name = "expenseId", nullable = false)
