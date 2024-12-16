@@ -48,8 +48,8 @@ jobs:
     - name: Upload build artifact
       uses: actions/upload-artifact@v3
       with:
-        name: trelloServer
-        path: build/libs/trelloServer-0.0.1-SNAPSHOT.jar
+        name: DodutchServer
+        path: build/libs/Dodutch-Server-0.0.1-SNAPSHOT.jar
 
   deploy:
     needs: build
@@ -60,7 +60,7 @@ jobs:
     - name: Download build artifact
       uses: actions/download-artifact@v3
       with:
-        name: trelloServer
+        name: DodutchServer
         path: build/libs/
 
     # EC2에 배포
@@ -72,8 +72,8 @@ jobs:
       run: |
         echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
         chmod 600 private_key.pem
-        scp -i private_key.pem -o StrictHostKeyChecking=no build/libs/trelloServer-0.0.1-SNAPSHOT.jar ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/trelloServer.jar
-        ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "pgrep java | xargs kill -9; nohup java -jar /home/${{ secrets.EC2_USERNAME }}/trelloServer.jar > app.log 2>&1 &"
+        scp -i private_key.pem -o StrictHostKeyChecking=no build/libs/Dodutch-Server-0.0.1-SNAPSHOT.jar ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/DodutchServer.jar
+        ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "pgrep java | xargs kill -9; nohup java -jar /home/${{ secrets.EC2_USERNAME }}/DodutchServer.jar > app.log 2>&1 &"
         rm -f private_key.pem
 
     # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
