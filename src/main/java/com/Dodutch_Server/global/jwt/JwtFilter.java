@@ -1,7 +1,11 @@
 package com.Dodutch_Server.global.jwt;
 
 
+import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.member.repository.MemberRepository;
+import com.Dodutch_Server.global.common.apiPayload.code.status.ErrorStatus;
+import com.Dodutch_Server.global.common.exception.handler.ErrorHandler;
+import jakarta.servlet.*;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -12,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
+import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtFilter extends GenericFilterBean {
     public static final String AUTHORIZATION_HEADER = "Authorization";
@@ -39,7 +44,7 @@ public class JwtFilter extends GenericFilterBean {
 
         //member가 null이면 디비에 존재하지 않는 멤버
         if(member == null) {
-            throw new CustomException(ErrorCode.NOT_EXIST_USER);
+            throw new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND);
         }
         // 멤버 정보를 바탕으로 인증 토큰을 생성하고, 이를 Security Context에 저장
         UserDetails userDetails = UserPrincipal.create(member);

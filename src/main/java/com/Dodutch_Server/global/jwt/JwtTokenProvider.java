@@ -1,6 +1,8 @@
 package com.Dodutch_Server.global.jwt;
 
 
+import com.Dodutch_Server.global.common.apiPayload.code.status.ErrorStatus;
+import com.Dodutch_Server.global.common.exception.handler.ErrorHandler;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.io.Encoders;
