@@ -1,4 +1,4 @@
-package com.Dodutch_Server.domain.member.domain.repository;
+package com.Dodutch_Server.domain.member.repository;
 
 import com.Dodutch_Server.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;

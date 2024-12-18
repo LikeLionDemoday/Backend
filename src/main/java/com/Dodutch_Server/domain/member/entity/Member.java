@@ -11,7 +11,7 @@ public class Member extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long nickname;
+    private String nickname;
     private Long kakaoId;
 
     @OneToMany(mappedBy = "member")
