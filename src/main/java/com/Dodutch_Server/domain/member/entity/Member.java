@@ -1,5 +1,6 @@
 package com.Dodutch_Server.domain.member.entity;
 
+import com.Dodutch_Server.domain.auth.dto.request.SignUpRequestDto;
 import com.Dodutch_Server.domain.trip.entity.TripMember;
 import com.Dodutch_Server.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -8,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -33,5 +35,9 @@ public class Member extends BaseEntity {
 
     public void setRefreshToken(String token) {
         this.refreshToken = token;
+    }
+
+    public void setNickName(String nickName){
+        this.nickName = nickName;
     }
 }

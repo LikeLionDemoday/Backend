@@ -2,9 +2,12 @@ package com.Dodutch_Server.domain.auth.service;
 
 import com.Dodutch_Server.domain.auth.dto.KakaoInfoDto;
 import com.Dodutch_Server.domain.auth.dto.KakaoMemberAndExistDto;
+import com.Dodutch_Server.domain.auth.dto.request.SignUpRequestDto;
 import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
 import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.member.repository.MemberRepository;
+import com.Dodutch_Server.global.common.apiPayload.code.status.ErrorStatus;
+import com.Dodutch_Server.global.common.exception.handler.ErrorHandler;
 import com.Dodutch_Server.global.jwt.JwtTokenProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -144,5 +148,22 @@ public class AuthService {
                 .refreshToken(refreshToken)
                 .existMember(existMember)
                 .build();
+    }
+
+    @Transactional
+    public void signup(SignUpRequestDto signUpRequestDto){
+        String nickName = signUpRequestDto.getNickName();
+        String accessToken = signUpRequestDto.getAccessToken();
+
+        if(!jwtTokenProvider.validateToken(accessToken)||!StringUtils.hasText(accessToken)){
+            throw new ErrorHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
+        }
+
+        String kakaoId = jwtTokenProvider.getPayload(accessToken);
+
+        Member member = memberRepository.findByKakaoId(kakaoId);
+
+        member.setNickName(nickName);
+
     }
 }

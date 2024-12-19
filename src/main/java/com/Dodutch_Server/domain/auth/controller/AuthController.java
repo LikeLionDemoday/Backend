@@ -1,6 +1,7 @@
 package com.Dodutch_Server.domain.auth.controller;
 
 import com.Dodutch_Server.domain.auth.dto.request.KakaoRequestDto;
+import com.Dodutch_Server.domain.auth.dto.request.SignUpRequestDto;
 import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
 import com.Dodutch_Server.domain.auth.service.AuthService;
 import com.Dodutch_Server.global.common.apiPayload.ApiResponse;
@@ -34,5 +35,17 @@ public class AuthController {
         KakaoResponseDto kakaoResponseDto = authService.loginWithKakao(kakaoRequestDto.getAccessCode(), response);
 
         return ApiResponse.onSuccess(kakaoResponseDto);
+    }
+
+    @PostMapping("/signup")
+    @Operation(summary = "카카오 로그인 후 로그인 폼 받아서 자체 회원가입 API")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
+    })
+    public ApiResponse<Object> signup(@RequestBody SignUpRequestDto signUpRequestDto) {
+
+        authService.signup(signUpRequestDto);
+
+        return ApiResponse.onSuccess();
     }
 }
