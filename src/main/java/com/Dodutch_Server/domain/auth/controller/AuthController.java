@@ -1,0 +1,38 @@
+package com.Dodutch_Server.domain.auth.controller;
+
+import com.Dodutch_Server.domain.auth.dto.request.KakaoRequestDto;
+import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
+import com.Dodutch_Server.domain.auth.service.AuthService;
+import com.Dodutch_Server.global.common.apiPayload.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+@Slf4j
+@RequestMapping("/auth")
+@Tag(name = "Auth", description = "로그인 관련된 API")
+public class AuthController {
+
+    private final AuthService authService;
+
+    @PostMapping("/kakao/login")
+    @Operation(summary = "카카오 로그인 API")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
+    })
+    public ApiResponse<KakaoResponseDto> login(@RequestBody KakaoRequestDto kakaoRequestDto,
+                                               HttpServletResponse response) {
+
+        KakaoResponseDto kakaoResponseDto = authService.loginWithKakao(kakaoRequestDto.getAccessCode(), response);
+
+        return ApiResponse.onSuccess(kakaoResponseDto);
+    }
+}

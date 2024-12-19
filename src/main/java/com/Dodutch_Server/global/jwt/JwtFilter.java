@@ -1,6 +1,7 @@
 package com.Dodutch_Server.global.jwt;
 
 
+import com.Dodutch_Server.domain.auth.model.UserPrincipal;
 import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.member.repository.MemberRepository;
 import com.Dodutch_Server.global.common.apiPayload.code.status.ErrorStatus;
@@ -13,6 +14,9 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -40,7 +44,7 @@ public class JwtFilter extends GenericFilterBean {
         }
 
         String kakaoId = jwtTokenProvider.getPayload(jwt);
-        Member member = memberRepository.findByKaKaoId(kakaoId);
+        Member member = memberRepository.findByKakaoId(kakaoId);
 
         //member가 null이면 디비에 존재하지 않는 멤버
         if(member == null) {
