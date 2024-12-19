@@ -6,4 +6,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
+
+    Member findByKakaoId(String kakaoId);
+
+    Member findByRefreshToken(String refreshToken);
+
+    boolean existsByNickName(String nickName);
 }

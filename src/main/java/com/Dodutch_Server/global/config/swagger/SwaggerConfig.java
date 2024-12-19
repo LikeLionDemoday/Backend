@@ -1,4 +1,4 @@
-package com.Dodutch_Server.global.config;
+package com.Dodutch_Server.global.config.swagger;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
