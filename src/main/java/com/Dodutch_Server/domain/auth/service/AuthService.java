@@ -2,8 +2,10 @@ package com.Dodutch_Server.domain.auth.service;
 
 import com.Dodutch_Server.domain.auth.dto.KakaoInfoDto;
 import com.Dodutch_Server.domain.auth.dto.KakaoMemberAndExistDto;
+import com.Dodutch_Server.domain.auth.dto.request.RefreshRequestDto;
 import com.Dodutch_Server.domain.auth.dto.request.SignUpRequestDto;
 import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
+import com.Dodutch_Server.domain.auth.dto.response.RefreshResponseDto;
 import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.member.repository.MemberRepository;
 import com.Dodutch_Server.global.common.apiPayload.code.status.ErrorStatus;
@@ -165,5 +167,27 @@ public class AuthService {
 
         member.setNickName(nickName);
 
+    }
+
+    // 리프레시 토큰으로 액세스토큰 새로 갱신
+    public RefreshResponseDto refreshAccessToken(RefreshRequestDto refreshRequestDto) {
+
+        String refreshToken = refreshRequestDto.getRefreshToken();
+        //유효성 검사 실패 시
+        if(!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new ErrorHandler(ErrorStatus.INVALID_REFRESH_TOKEN);
+        }
+
+        Member member = memberRepository.findByRefreshToken(refreshToken);
+        if(member == null) {
+            throw new ErrorHandler(ErrorStatus.NOT_EXIST_USER);
+        }
+
+        String changeAccessToken = jwtTokenProvider.createAccessToken(member.getKakaoId().toString());
+
+        return RefreshResponseDto.builder()
+                .accessToken(changeAccessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 }

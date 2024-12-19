@@ -1,8 +1,10 @@
 package com.Dodutch_Server.domain.auth.controller;
 
 import com.Dodutch_Server.domain.auth.dto.request.KakaoRequestDto;
+import com.Dodutch_Server.domain.auth.dto.request.RefreshRequestDto;
 import com.Dodutch_Server.domain.auth.dto.request.SignUpRequestDto;
 import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
+import com.Dodutch_Server.domain.auth.dto.response.RefreshResponseDto;
 import com.Dodutch_Server.domain.auth.service.AuthService;
 import com.Dodutch_Server.global.common.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,4 +50,19 @@ public class AuthController {
 
         return ApiResponse.onSuccess();
     }
+
+    // 리프레시 토큰으로 액세스토큰 재발급 받는 로직
+    @PostMapping("/token/refresh")
+    @Operation(summary = "Access Token 재발급 API")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
+    })
+    public ApiResponse<RefreshResponseDto> tokenRefresh(@RequestBody RefreshRequestDto refreshRequestDto, HttpServletResponse httpServletResponse) {
+
+        RefreshResponseDto refreshResponseDto = authService.refreshAccessToken(refreshRequestDto);
+
+        return ApiResponse.onSuccess(refreshResponseDto);
+
+    }
+
 }
