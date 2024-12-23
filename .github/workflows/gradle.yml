@@ -9,9 +9,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "feat/#9" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "feat/#9" ]
+    branches: [ "main" ]
 
 jobs:
   build-docker-image:
