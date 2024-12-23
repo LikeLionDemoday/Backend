@@ -9,9 +9,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "feat/#9" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "feat/#9" ]
 
 jobs:
   build-docker-image:
@@ -72,18 +72,26 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # 1. 최신 이미지를 풀받습니다
+      # 1. 최신 이미지 pull
       - name: docker pull
         run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/spring-cicd-test
 
-      # 2. 기존의 컨테이너를 중지시킵니다
+      # 2. 기존 container 중지
       - name: docker stop container
         run: sudo docker stop $(sudo docker ps -q) 2>/dev/null || true
 
-      # 3. 최신 이미지를 컨테이너화하여 실행시킵니다
+      # 3. 최신 이미지를 컨테이너화하여 실행시킴
       - name: docker run new container
-        run: sudo docker run --name spring-cicd-test --rm -d -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/spring-cicd-test
+        run: |
+          sudo docker run --name spring-cicd-test --rm -d -p 8080:8080 \
+            -e DB_URL=${{ secrets.DB_URL }} \
+            -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
+            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
+            -e KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
+            -e KAKAO_REDIRECT_URL=${{ secrets.KAKAO_REDIRECT_URL }} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/spring-cicd-test
 
-      # 4. 미사용 이미지를 정리합니다
+      # 4. 미사용 이미지 삭제
       - name: delete old docker image
         run: sudo docker system prune -f
