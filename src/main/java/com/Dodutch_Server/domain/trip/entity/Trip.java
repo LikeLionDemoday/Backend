@@ -20,5 +20,5 @@ public class Trip extends BaseEntity {
     private String password;
 
     @OneToMany(mappedBy = "trip")
-    private List<TripMember> tripMembers = new ArrayList<>();
+    private final List<TripMember> tripMembers = new ArrayList<>();
 }

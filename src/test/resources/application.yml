@@ -15,8 +15,8 @@ spring:
 
 
 jwt:
-  secret-key: ${JWT_SECRET_KEY}
+  secret-key: ${{ secrets.JWT_SECRET_KEY }}
 
 kakao:
-  client-id: ${KAKAO_CLIENT_ID}
-  redirect-url: ${KAKAO_REDIRECT_URL}
+  client-id: ${{ secrets.KAKAO_CLIENT_ID }}
+  redirect-url: ${{ secrets.KAKAO_REDIRECT_URL }}
