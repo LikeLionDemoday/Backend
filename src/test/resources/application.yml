@@ -12,3 +12,11 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+
+jwt:
+  secret-key: ${{ secrets.JWT_SECRET_KEY }}
+
+kakao:
+  client-id: ${{ secrets.KAKAO_CLIENT_ID }}
+  redirect-url: ${{ secrets.KAKAO_REDIRECT_URL }}
