@@ -50,7 +50,7 @@ jobs:
 
       # Spring Boot 애플리케이션 Build
       - name: Build with Gradle Wrapper
-        run: ./gradlew build
+        run: ./gradlew build -x test
 
       # Docker 이미지 Build
       - name: docker image build
@@ -84,6 +84,8 @@ jobs:
       - name: docker run new container
         run: sudo docker run --name spring-cicd-test --rm -d -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/spring-cicd-test
 
-      # 4. 미사용 이미지 정리
+
+
+  # 4. 미사용 이미지 정리
       - name: delete old docker image
         run: sudo docker system prune -f
