@@ -15,9 +15,9 @@ public class MemberController {
     private final MemberService memberService;
 
     @Operation(
-            summary = "멤버의 닉네임 존재 여부 확인 API",
-            description = "멤버의 닉네임이 존재하면 true, 존재하지 않으면 false를 보내는 API 입니다",
-            security = @SecurityRequirement(name = "bearerAuth"))
+                    summary = "멤버의 닉네임 존재 여부 확인 API",
+    description = "멤버의 닉네임이 존재하면 true, 존재하지 않으면 false를 보내는 API 입니다",
+    security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/check/nickname")
     public ApiResponse<Boolean> checkNickNameExists(){
         Long memberId = SecurityUtil.getCurrentUserId();

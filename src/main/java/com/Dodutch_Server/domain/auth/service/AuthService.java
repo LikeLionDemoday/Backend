@@ -116,6 +116,7 @@ public class AuthService {
         KakaoInfoDto kakaoInfoDto = new KakaoInfoDto(userAttributesByToken);
         Member member = Member.builder()
                 .kakaoId(kakaoInfoDto.getKakaoId())
+                .name(kakaoInfoDto.getName())
                 .build();
 
         boolean existMember = false;
