@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Transactional
 @Service
 @RequiredArgsConstructor
 public class TripService {
@@ -34,6 +33,8 @@ public class TripService {
     private final UuidRepository uuidRepository;
     private final AmazonS3Manager s3Manager;
 
+    // 여행 생성
+    @Transactional
     public TripResponseDTO createTrip(TripRequestDTO request, Long memberId){
 
         Uuid mainUuid = uuidRepository.save(Uuid.builder().uuid(UUID.randomUUID().toString()).build());
@@ -68,6 +69,34 @@ public class TripService {
         return convertToTripResponse(savedTrip);
     }
 
+    // 여행 참여
+    @Transactional
+    public void addMemberToTrip(String joinCode, Long memberId) {
+
+        // 참여 코드로 Trip 찾기
+        Trip findTrip = tripRepository.findByJoinCode(joinCode)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.TRIP_NOT_EXIST));
+
+        Member findMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // TripMember 중복 체크
+        boolean isMemberAlreadyInTrip = findTrip.getTripMembers().stream()
+                .anyMatch(tripMember -> tripMember.getMember().getId().equals(memberId));
+
+        if (isMemberAlreadyInTrip) {
+            throw new ErrorHandler(ErrorStatus.TRIP_MEMBER_EXIST);
+        }
+
+        TripMember tripMember = TripMember.builder()
+                .trip(findTrip)
+                .member(findMember)
+                .build();
+
+        tripMemberRepository.save(tripMember);
+
+    }
+
 
     public TripResponseDTO convertToTripResponse(Trip trip) {
         return TripResponseDTO.builder()
@@ -76,6 +105,11 @@ public class TripService {
                 .tripImageUrl(trip.getTripImageUrl())
                 .build();
 
+    }
+
+    // 참여 코드 반환
+    public String getJoinCode(Long tripId){
+        return tripRepository.findById(tripId).get().getJoinCode();
     }
 
     // 여행 조회
@@ -98,30 +132,6 @@ public class TripService {
         if (tripRequestDTO.getPlace() != null) trip.setPlace(tripRequestDTO.getPlace());
         if (tripRequestDTO.getBudget() != null) trip.setBudget(tripRequestDTO.getBudget());
         return tripRepository.save(trip);
-    }
-
-    public void addMemberToTrip(Long tripId, Long memberId) {
-        // 여행 조회
-        Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 여행이 존재하지 않습니다."));
-
-        // 멤버 조회
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 멤버가 존재하지 않습니다."));
-
-        // TripMember 중복 체크
-        boolean isMemberAlreadyInTrip = trip.getTripMembers().stream()
-                .anyMatch(tripMember -> tripMember.getMember().getId().equals(memberId));
-
-        if (isMemberAlreadyInTrip) {
-            throw new IllegalArgumentException("멤버가 이미 여행에 추가되어 있습니다.");
-        }
-
-        // TripMember 저장
-        TripMember tripMember = new TripMember();
-        tripMember.setTrip(trip);
-        tripMember.setMember(member);
-        tripMemberRepository.save(tripMember);
     }
 
 

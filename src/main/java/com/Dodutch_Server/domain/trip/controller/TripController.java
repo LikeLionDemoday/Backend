@@ -2,6 +2,7 @@ package com.Dodutch_Server.domain.trip.controller;
 
 import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
 import com.Dodutch_Server.domain.auth.util.SecurityUtil;
+import com.Dodutch_Server.domain.trip.dto.request.TripJoinRequestDto;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponseDTO;
 import com.Dodutch_Server.domain.trip.util.RandomStringGenerator;
 import com.Dodutch_Server.domain.trip.repository.TripRepository;
@@ -40,6 +41,26 @@ public class TripController {
             TripResponseDTO tripResponseDTO = tripService.createTrip(request,memberId);
         return ApiResponse.onSuccess(tripResponseDTO);
     }
+
+    @PostMapping("/join")
+    @Operation(summary = "여행 참여 API")
+    public ApiResponse<Object> joinTripWithCode(@RequestBody TripJoinRequestDto request) {
+        Long memberId = SecurityUtil.getCurrentUserId();
+
+        tripService.addMemberToTrip(request.getJoinCode(), memberId);
+
+        return ApiResponse.onSuccess();
+        }
+
+
+    @GetMapping("/{tripId}/code")
+    @Operation(summary = "참여 코드 반환 API")
+    public ApiResponse<String> getTripJoinCode(@PathVariable Long tripId) {
+
+        return ApiResponse.onSuccess(tripService.getJoinCode(tripId));
+
+    }
+
 
     @GetMapping("/{tripId}")
     public ResponseDTO<TripResponseDTO> getTrip(@PathVariable Long tripId) {
@@ -86,48 +107,6 @@ public class TripController {
 
         return createSuccessResponse("200", "여행 검색 성공", tripResponseList);
     }
-
-
-    @PostMapping("/join")
-    public ResponseEntity<ResponseDTO<Void>> joinTripWithCode(@RequestBody Map<String, Object> request) {
-        String joinCode = (String) request.get("joinCode");
-        Long memberId = ((Number) request.get("memberId")).longValue();
-
-        if (joinCode == null || memberId == null) {
-            return ResponseEntity.badRequest().body(
-                    createErrorResponse("400", "Required parameters 'joinCode' and 'memberId' are not present.")
-            );
-        }
-
-        try {
-            // 참여 코드로 Trip 찾기
-            Trip trip = tripRepository.findByJoinCode(joinCode)
-                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 참여 코드입니다."));
-            tripService.addMemberToTrip(trip.getId(), memberId);
-
-            return ResponseEntity.ok(
-                    createSuccessResponse("200", "멤버가 성공적으로 추가되었습니다.", null)
-            );
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(
-                    createErrorResponse("400", e.getMessage())
-            );
-        }
-    }
-
-
-    @GetMapping("/{tripId}/join") //참여 코드 반환
-    public ResponseEntity<ResponseDTO<Map<String, String>>> getTripJoinCode(@PathVariable Long tripId) {
-        // Trip ID로 여행 조회
-        Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 여행이 존재하지 않습니다."));
-
-        Map<String, String> response = Map.of("joinCode", trip.getJoinCode());
-        return ResponseEntity.ok(
-                createSuccessResponse("200", "참여 코드 반환 성공", response)
-        );
-    }
-
 
     // 공통 응답 생성 메소드 (성공)
     private <T> ResponseDTO<T> createSuccessResponse(String code, String message, T data) {
