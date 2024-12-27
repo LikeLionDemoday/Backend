@@ -8,6 +8,7 @@ import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
 import com.Dodutch_Server.domain.auth.dto.response.RefreshResponseDto;
 import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.member.repository.MemberRepository;
+import com.Dodutch_Server.domain.member.service.MemberService;
 import com.Dodutch_Server.global.common.apiPayload.code.status.ErrorStatus;
 import com.Dodutch_Server.global.common.exception.handler.ErrorHandler;
 import com.Dodutch_Server.global.jwt.JwtTokenProvider;
@@ -39,6 +40,7 @@ public class AuthService {
 
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final MemberService memberService;
 
     @Value("${kakao.client-id}")
     private String clientId;
@@ -165,6 +167,9 @@ public class AuthService {
         String kakaoId = jwtTokenProvider.getPayload(accessToken);
 
         Member member = memberRepository.findByKakaoId(kakaoId);
+        if(!memberService.checkNickName(member.getNickName())){
+            throw new ErrorHandler(ErrorStatus.BAD_REQUEST);
+        }
 
         member.setNickName(nickName);
 
