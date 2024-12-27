@@ -168,7 +168,7 @@ public class AuthService {
 
         Member member = memberRepository.findByKakaoId(kakaoId);
         if(memberService.checkNickName(member.getNickName())){
-            throw new ErrorHandler(ErrorStatus.BAD_REQUEST);
+            throw new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND);
         }
 
         member.setNickName(nickName);
