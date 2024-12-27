@@ -5,8 +5,12 @@ import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.trip.entity.Trip;
 import com.Dodutch_Server.global.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 public class Dutch extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
