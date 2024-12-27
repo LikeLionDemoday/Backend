@@ -80,6 +80,18 @@ jobs:
       - name: docker stop container
         run: sudo docker stop $(sudo docker ps -q) 2>/dev/null || true
 
+      # 환경변수 디버깅
+      - name: debug secrets
+        run: |
+          echo "DB_URL=${{ secrets.DB_URL }}"
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}"
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}"
+          echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}"
+          echo "KAKAO_REDIRECT_URL=${{ secrets.KAKAO_REDIRECT_URL }}"
+          echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}"
+
+
       # 3. 최신 이미지를 컨테이너화하여 실행시킴
       - name: docker run new container
         run: |
