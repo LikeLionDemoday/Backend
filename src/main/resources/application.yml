@@ -13,6 +13,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  servlet:
+    multipart:
+      max-request-size: 50MB
+      max-file-size: 50MB
 
 
 jwt:
@@ -21,3 +25,15 @@ jwt:
 kakao:
   client-id: ${KAKAO_CLIENT_ID}
   redirect-url: ${KAKAO_REDIRECT_URL}
+
+cloud:
+  aws:
+    s3:
+      bucket: dodutch-bucket
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+    credentials:
+      accessKey: ${AWS_ACCESS_KEY_ID}
+      secretKey: ${AWS_SECRET_ACCESS_KEY}
