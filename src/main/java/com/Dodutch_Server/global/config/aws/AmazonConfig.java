@@ -25,6 +25,8 @@ public class AmazonConfig {
     private String region;
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
+    @Value("${cloud.aws.s3.path.trip-main}")
+    private String mainPath;
     @PostConstruct
     public void init() {
         this.awsCredentials = new BasicAWSCredentials(accessKey, secretKey);

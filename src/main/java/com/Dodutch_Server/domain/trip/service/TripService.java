@@ -2,25 +2,26 @@ package com.Dodutch_Server.domain.trip.service;
 
 import com.Dodutch_Server.domain.member.repository.MemberRepository;
 import com.Dodutch_Server.domain.member.entity.Member;
-import com.Dodutch_Server.domain.trip.dto.TripAddMemberRequestDTO;
-import com.Dodutch_Server.domain.trip.dto.TripRequestDTO;
-import com.Dodutch_Server.domain.trip.dto.TripResponseDTO;
+import com.Dodutch_Server.domain.trip.dto.request.TripRequestDTO;
+import com.Dodutch_Server.domain.trip.dto.response.TripResponseDTO;
 import com.Dodutch_Server.domain.trip.entity.Trip;
 import com.Dodutch_Server.domain.trip.entity.TripMember;
 import com.Dodutch_Server.domain.trip.repository.TripMemberRepository;
 import com.Dodutch_Server.domain.trip.repository.TripRepository;
-import com.Dodutch_Server.global.common.ResponseDTO;
+import com.Dodutch_Server.domain.trip.util.RandomStringGenerator;
+import com.Dodutch_Server.domain.uuid.entity.Uuid;
+import com.Dodutch_Server.domain.uuid.repository.UuidRepository;
+import com.Dodutch_Server.global.common.apiPayload.code.status.ErrorStatus;
+import com.Dodutch_Server.global.common.exception.handler.ErrorHandler;
+import com.Dodutch_Server.global.config.aws.AmazonS3Manager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -30,31 +31,51 @@ public class TripService {
     private final TripRepository tripRepository;
     private final MemberRepository memberRepository;
     private final TripMemberRepository tripMemberRepository;
+    private final UuidRepository uuidRepository;
+    private final AmazonS3Manager s3Manager;
+
+    public TripResponseDTO createTrip(TripRequestDTO request, Long memberId){
+
+        Uuid mainUuid = uuidRepository.save(Uuid.builder().uuid(UUID.randomUUID().toString()).build());
+        String tripImageUrl = s3Manager.uploadFile(s3Manager.generateMainKeyName(mainUuid), request.getTripImage());
+
+        String joinCode = RandomStringGenerator.generateRandomString(12);
+
+        Trip trip = Trip.builder()
+                .tripImageUrl(tripImageUrl)
+                .name(request.getTripName())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .place(request.getPlace())
+                .budget(request.getBudget())
+                .totalCost(0)
+                .joinCode(joinCode)
+                .build();
+
+        Trip savedTrip = tripRepository.save(trip); // TripRepository 인스턴스를 통해 save 호출
+
+        Member findMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.NOT_EXIST_USER));
+
+        TripMember tripMember = TripMember.builder()
+                .member(findMember)
+                .trip(savedTrip)
+                .build();
+
+        tripMemberRepository.save(tripMember);
+
+
+        return convertToTripResponse(savedTrip);
+    }
 
 
     public TripResponseDTO convertToTripResponse(Trip trip) {
-        TripResponseDTO tripResponse = new TripResponseDTO();
-        tripResponse.setTripId(trip.getId());
-        tripResponse.setTripName(trip.getName());
-        tripResponse.setStartDate(trip.getStartDate().toString());
-        tripResponse.setEndDate(trip.getEndDate().toString());
-        tripResponse.setPlace(trip.getPlace());
-        tripResponse.setBudget(trip.getBudget().longValue());
-        tripResponse.setMemo(trip.getMemo());
-        tripResponse.setTotalCost(trip.getTotalCost()); // totalCost 추가
+        return TripResponseDTO.builder()
+                .tripId(trip.getId())
+                .joinCode(trip.getJoinCode())
+                .tripImageUrl(trip.getTripImageUrl())
+                .build();
 
-        // TripMember에서 해당 Trip에 속한 Member ID 리스트 생성
-        List<TripResponseDTO.MemberDTO> memberDTOList = trip.getTripMembers().stream()
-                .map(tripMember -> {
-                    TripResponseDTO.MemberDTO memberDTO = new TripResponseDTO.MemberDTO();
-                    memberDTO.setMemberID(tripMember.getMember().getId());
-                    return memberDTO;
-                })
-                .collect(Collectors.toList());
-
-        tripResponse.setMembers(memberDTOList);
-
-        return tripResponse;
     }
 
     // 여행 조회
@@ -76,7 +97,6 @@ public class TripService {
         if (tripRequestDTO.getEndDate() != null) trip.setEndDate(tripRequestDTO.getEndDate());
         if (tripRequestDTO.getPlace() != null) trip.setPlace(tripRequestDTO.getPlace());
         if (tripRequestDTO.getBudget() != null) trip.setBudget(tripRequestDTO.getBudget());
-        if (tripRequestDTO.getMemo() != null) trip.setMemo(tripRequestDTO.getMemo());
         return tripRepository.save(trip);
     }
 

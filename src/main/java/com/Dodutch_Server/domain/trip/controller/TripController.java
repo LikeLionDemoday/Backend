@@ -1,14 +1,18 @@
 package com.Dodutch_Server.domain.trip.controller;
 
-import com.Dodutch_Server.domain.trip.dto.TripResponseDTO;
+import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
+import com.Dodutch_Server.domain.auth.util.SecurityUtil;
+import com.Dodutch_Server.domain.trip.dto.response.TripResponseDTO;
 import com.Dodutch_Server.domain.trip.util.RandomStringGenerator;
 import com.Dodutch_Server.domain.trip.repository.TripRepository;
 import com.Dodutch_Server.global.common.ResponseDTO;
-import com.Dodutch_Server.domain.trip.dto.TripRequestDTO;
+import com.Dodutch_Server.domain.trip.dto.request.TripRequestDTO;
 import com.Dodutch_Server.domain.trip.entity.Trip;
 import com.Dodutch_Server.domain.trip.service.TripService; // TripService 추가
+import com.Dodutch_Server.global.common.apiPayload.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,39 +22,23 @@ import java.util.Map;
 @RestController
 @RequestMapping("/trip")
 @RequiredArgsConstructor
+@Tag(name = "Trip", description = "여행 관련된 API")
 public class TripController {
 
-    private final TripService tripService; // TripService 사용
-    private final TripRepository tripRepository; // TripRepository 추가
+    private final TripService tripService;
+    private final TripRepository tripRepository;
 
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDTO<TripResponseDTO> createTrip(@RequestBody TripRequestDTO tripRequestDTO) {
-        if (tripRequestDTO.getTripName() == null || tripRequestDTO.getStartDate() == null ||
-                tripRequestDTO.getEndDate() == null || tripRequestDTO.getPlace() == null || tripRequestDTO.getBudget() == null) {
+    @Operation(summary = "여행 생성 API")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
+    })
+    public ApiResponse<TripResponseDTO> create(@ModelAttribute TripRequestDTO request) {
 
-            return createErrorResponse("400", "필수 항목이 누락되었습니다.");
-        }
-
-        String joinCode = RandomStringGenerator.generateRandomString(12);
-
-        // 여행 엔티티 생성 및 저장
-        Trip trip = new Trip();
-        trip.setName(tripRequestDTO.getTripName());
-        trip.setStartDate(tripRequestDTO.getStartDate());
-        trip.setEndDate(tripRequestDTO.getEndDate());
-        trip.setPlace(tripRequestDTO.getPlace());
-        trip.setBudget(tripRequestDTO.getBudget());
-        trip.setTotalCost(0); // 초기 비용 설정
-        trip.setJoinCode(joinCode); // 참여 코드 설정
-        trip.setMemo(tripRequestDTO.getMemo()); //메모 추가
-
-        Trip savedTrip = tripRepository.save(trip); // TripRepository 인스턴스를 통해 save 호출
-
-        TripResponseDTO tripResponse = tripService.convertToTripResponse(savedTrip);
-
-        return createSuccessResponse("201", "여행 생성 성공", tripResponse);
+            Long memberId = SecurityUtil.getCurrentUserId();
+            TripResponseDTO tripResponseDTO = tripService.createTrip(request,memberId);
+        return ApiResponse.onSuccess(tripResponseDTO);
     }
 
     @GetMapping("/{tripId}")

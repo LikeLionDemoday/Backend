@@ -30,6 +30,8 @@ cloud:
   aws:
     s3:
       bucket: dodutch-bucket
+      path:
+        trip-main: trip/main
     region:
       static: ap-northeast-2
     stack:
