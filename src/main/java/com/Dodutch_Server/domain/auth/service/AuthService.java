@@ -167,7 +167,7 @@ public class AuthService {
         String kakaoId = jwtTokenProvider.getPayload(accessToken);
 
         Member member = memberRepository.findByKakaoId(kakaoId);
-        if(!memberService.checkNickName(member.getNickName())){
+        if(memberService.checkNickName(member.getNickName())){
             throw new ErrorHandler(ErrorStatus.BAD_REQUEST);
         }
 
