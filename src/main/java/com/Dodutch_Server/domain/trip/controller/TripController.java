@@ -53,13 +53,19 @@ public class TripController {
         return ApiResponse.onSuccess();
         }
 
-
-    @GetMapping("/{tripId}")
-    @Operation(summary = "여행 정보 반환 API")
+    @GetMapping("/share/{tripId}")
+    @Operation(summary = "여행 공유시 정보 반환 API")
     public ApiResponse<TripResponseDTO> getTripInfo(@PathVariable Long tripId) {
 
         return ApiResponse.onSuccess(tripService.convertToTripResponse(tripId));
 
+    }
+
+    @GetMapping("/{tripId}")
+    @Operation(summary = "여행 목록 조회")
+    public ApiResponse<TripResponse>getTrip(@PathVariable Long tripId) {
+        Trip trip = tripService.getTripById(tripId);
+        return ApiResponse.onSuccess(tripService.convertToTripResponseV2(trip));
     }
 
 
