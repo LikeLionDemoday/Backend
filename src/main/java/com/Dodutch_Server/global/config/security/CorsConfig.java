@@ -16,8 +16,8 @@ public class CorsConfig  implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins("http://localhost:3000")
-                .allowedMethods("*")
-                .allowCredentials(true)
-                .maxAge(6000); // 사전 요청 캐싱 시간 최대 10분
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH")
+                .allowedHeaders("*")
+                .allowCredentials(true);
     }
 }
