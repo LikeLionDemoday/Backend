@@ -36,7 +36,6 @@ public class ExpenseController {
                                           @RequestPart("request") @Valid String requestJson,
                                           @RequestPart(value = "expenseImage", required = false) MultipartFile expenseImage) {
 
-        Long memberId = SecurityUtil.getCurrentUserId();
 
         // JSON 문자열을 DTO로 변환
         ObjectMapper objectMapper = new ObjectMapper();
@@ -49,7 +48,7 @@ public class ExpenseController {
         }
 
 
-        expenseService.addExpense(tripId,memberId, request, expenseImage);
+        expenseService.addExpense(tripId,request.getPayer(), request, expenseImage);
 
         return ApiResponse.onSuccess();
     }

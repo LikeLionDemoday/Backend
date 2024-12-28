@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ExpenseInfoDto {
 
+    private Long payer;
     private String title;        // 내용
     private ExpenseCategory expenseCategory;     // 카테고리
     private int amount;

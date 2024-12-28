@@ -38,7 +38,7 @@ public class ExpenseService {
     private final AmazonS3Manager s3Manager;
 
     @Transactional
-    public void addExpense(Long tripId, Long memberId,ExpenseRequestDTO request, MultipartFile expenseImage) {
+    public void addExpense(Long tripId, Long payerId,ExpenseRequestDTO request, MultipartFile expenseImage) {
         // tripId로 TripMember 테이블에서 멤버 조회
         List<TripMember> tripMembers = tripMemberRepository.findByTripId(tripId);
 
@@ -67,7 +67,7 @@ public class ExpenseService {
         }
 
         // 결제자(Member) 조회
-        Member payer = memberRepository.findById(request.getPayer())
+        Member payer = memberRepository.findById(payerId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         // Trip 조회
