@@ -48,7 +48,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-                        .anyRequest().permitAll()); // 일단 임시로 허용
+                        .anyRequest().authenticated()); // 일단 임시로 허용
 
         /*
         테스트 전 까지 JWT필터 주석처리
