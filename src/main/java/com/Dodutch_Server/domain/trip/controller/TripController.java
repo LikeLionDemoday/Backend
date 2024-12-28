@@ -3,6 +3,7 @@ package com.Dodutch_Server.domain.trip.controller;
 import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
 import com.Dodutch_Server.domain.auth.util.SecurityUtil;
 import com.Dodutch_Server.domain.trip.dto.request.TripJoinRequestDto;
+import com.Dodutch_Server.domain.trip.dto.request.TripUpdateRequestDTO;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponse;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponseDTO;
 import com.Dodutch_Server.domain.trip.util.RandomStringGenerator;
@@ -71,12 +72,11 @@ public class TripController {
 
     @PatchMapping("/{tripId}")
     @Operation(summary = "여행 수정 API")
-    public ResponseDTO<TripResponseDTO> updateTrip(@PathVariable Long tripId, @RequestBody TripRequestDTO tripRequestDTO) {
-        Trip trip = tripService.getTripById(tripId);
-        Trip updatedTrip = tripService.updateTrip(trip, tripRequestDTO); // 변수명으로 수정
+    public ApiResponse<Object> updateTrip(@PathVariable Long tripId, @RequestBody TripUpdateRequestDTO request) {
 
-        TripResponseDTO tripResponse = tripService.convertToTripResponse(updatedTrip.getId());
-        return createSuccessResponse("200", "여행 수정 성공", tripResponse);
+        tripService.updateTrip(tripId, request);
+
+        return ApiResponse.onSuccess();
     }
 
 
