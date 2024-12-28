@@ -3,6 +3,7 @@ package com.Dodutch_Server.domain.trip.service;
 import com.Dodutch_Server.domain.member.repository.MemberRepository;
 import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.trip.dto.request.TripRequestDTO;
+import com.Dodutch_Server.domain.trip.dto.response.TripResponse;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponseDTO;
 import com.Dodutch_Server.domain.trip.entity.Trip;
 import com.Dodutch_Server.domain.trip.entity.TripMember;
@@ -35,7 +36,7 @@ public class TripService {
 
     // 여행 생성
     @Transactional
-    public TripResponseDTO createTrip(TripRequestDTO request, Long memberId){
+    public Long createTrip(TripRequestDTO request, Long memberId){
 
         Uuid mainUuid = uuidRepository.save(Uuid.builder().uuid(UUID.randomUUID().toString()).build());
         String tripImageUrl = s3Manager.uploadFile(s3Manager.generateMainKeyName(mainUuid), request.getTripImage());
@@ -66,7 +67,7 @@ public class TripService {
         tripMemberRepository.save(tripMember);
 
 
-        return convertToTripResponse(savedTrip);
+        return savedTrip.getId();
     }
 
     // 여행 참여
@@ -98,14 +99,44 @@ public class TripService {
     }
 
 
-    public TripResponseDTO convertToTripResponse(Trip trip) {
+    public TripResponseDTO convertToTripResponse(Long tripId) {
+        Trip findTrip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.TRIP_NOT_EXIST));
         return TripResponseDTO.builder()
-                .tripId(trip.getId())
-                .joinCode(trip.getJoinCode())
-                .tripImageUrl(trip.getTripImageUrl())
+                .tripImageUrl(findTrip.getTripImageUrl())
+                .startDate(findTrip.getStartDate())
+                .endDate(findTrip.getEndDate())
+                .name(findTrip.getName())
+                .place(findTrip.getPlace())
+                .joinCode(findTrip.getJoinCode())
                 .build();
-
     }
+
+    public TripResponse convertToTripResponseV2(Trip trip) {
+        TripResponse tripResponse = new TripResponse();
+        tripResponse.setTripId(trip.getId());
+        tripResponse.setTripName(trip.getName());
+        tripResponse.setStartDate(trip.getStartDate().toString());
+        tripResponse.setEndDate(trip.getEndDate().toString());
+        tripResponse.setPlace(trip.getPlace());
+        tripResponse.setBudget(trip.getBudget().longValue());
+        tripResponse.setTotalCost(trip.getTotalCost()); // totalCost 추가
+
+        // TripMember에서 해당 Trip에 속한 Member ID 리스트 생성
+        List<TripResponse.MemberDTO> memberDTOList = trip.getTripMembers().stream()
+                .map(tripMember -> {
+                    TripResponse.MemberDTO memberDTO = new TripResponse.MemberDTO();
+                    memberDTO.setMemberID(tripMember.getMember().getId());
+                    return memberDTO;
+                })
+                .collect(Collectors.toList());
+
+        tripResponse.setMembers(memberDTOList);
+
+        return tripResponse;
+    }
+
+
 
     // 참여 코드 반환
     public String getJoinCode(Long tripId){
@@ -135,7 +166,7 @@ public class TripService {
     }
 
 
-    public List<TripResponseDTO> searchTrips(String name, String date, Long memberId) {
+    public List<TripResponse> searchTrips(String name, String date, Long memberId) {
         Integer parsedYear = null;
 
         // 연도만 추출
@@ -158,13 +189,13 @@ public class TripService {
         );
 
         // 검색 결과를 DTO로 변환
-        return trips.stream().map(this::convertToTripResponse).collect(Collectors.toList());
+        return trips.stream().map(this::convertToTripResponseV2).collect(Collectors.toList());
     }
 
 
-    public List<TripResponseDTO> getAllTrips() {
+    public List<TripResponse> getAllTrips() {
         return tripRepository.findAll().stream()
-                .map(this::convertToTripResponse)
+                .map(this::convertToTripResponseV2)
                 .collect(Collectors.toList());
     }
 

@@ -45,6 +45,9 @@ public class AmazonS3Manager {
     public String generateMainKeyName(Uuid uuid) {
         return amazonConfig.getMainPath() + '/' + uuid.getUuid();
     }
+    public String generateExpenseKeyName(Uuid uuid) {
+        return amazonConfig.getExpensePath() + '/' + uuid.getUuid();
+    }
 
 }
 

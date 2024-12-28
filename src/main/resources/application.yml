@@ -32,6 +32,7 @@ cloud:
       bucket: dodutch-bucket
       path:
         trip-main: trip/main
+        expense-main: expense-main
     region:
       static: ap-northeast-2
     stack:

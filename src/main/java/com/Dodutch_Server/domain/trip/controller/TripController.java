@@ -3,6 +3,7 @@ package com.Dodutch_Server.domain.trip.controller;
 import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
 import com.Dodutch_Server.domain.auth.util.SecurityUtil;
 import com.Dodutch_Server.domain.trip.dto.request.TripJoinRequestDto;
+import com.Dodutch_Server.domain.trip.dto.response.TripResponse;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponseDTO;
 import com.Dodutch_Server.domain.trip.util.RandomStringGenerator;
 import com.Dodutch_Server.domain.trip.repository.TripRepository;
@@ -35,11 +36,11 @@ public class TripController {
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
     })
-    public ApiResponse<TripResponseDTO> create(@ModelAttribute TripRequestDTO request) {
+    public ApiResponse<Long> create(@ModelAttribute TripRequestDTO request) {
 
             Long memberId = SecurityUtil.getCurrentUserId();
-            TripResponseDTO tripResponseDTO = tripService.createTrip(request,memberId);
-        return ApiResponse.onSuccess(tripResponseDTO);
+            Long tripId = tripService.createTrip(request,memberId);
+        return ApiResponse.onSuccess(tripId);
     }
 
     @PostMapping("/join")
@@ -53,28 +54,22 @@ public class TripController {
         }
 
 
-    @GetMapping("/{tripId}/code")
-    @Operation(summary = "참여 코드 반환 API")
-    public ApiResponse<String> getTripJoinCode(@PathVariable Long tripId) {
-
-        return ApiResponse.onSuccess(tripService.getJoinCode(tripId));
-
-    }
-
-
     @GetMapping("/{tripId}")
-    public ResponseDTO<TripResponseDTO> getTrip(@PathVariable Long tripId) {
-        Trip trip = tripService.getTripById(tripId);
-        TripResponseDTO tripResponse = tripService.convertToTripResponse(trip);
-        return createSuccessResponse("200", "여행 조회 성공", tripResponse);
+    @Operation(summary = "여행 정보 반환 API")
+    public ApiResponse<TripResponseDTO> getTripInfo(@PathVariable Long tripId) {
+
+        return ApiResponse.onSuccess(tripService.convertToTripResponse(tripId));
+
     }
+
 
     @PatchMapping("/{tripId}")
+    @Operation(summary = "여행 수정 API")
     public ResponseDTO<TripResponseDTO> updateTrip(@PathVariable Long tripId, @RequestBody TripRequestDTO tripRequestDTO) {
         Trip trip = tripService.getTripById(tripId);
         Trip updatedTrip = tripService.updateTrip(trip, tripRequestDTO); // 변수명으로 수정
 
-        TripResponseDTO tripResponse = tripService.convertToTripResponse(updatedTrip);
+        TripResponseDTO tripResponse = tripService.convertToTripResponse(updatedTrip.getId());
         return createSuccessResponse("200", "여행 수정 성공", tripResponse);
     }
 
@@ -90,10 +85,10 @@ public class TripController {
     }
 
     @GetMapping("/search")
-    public ResponseDTO<List<TripResponseDTO>> searchTrips(@RequestParam(required = false) String name,
-                                                          @RequestParam(required = false) String date,
-                                                          @RequestParam(required = false) Long member) {
-        List<TripResponseDTO> tripResponseList;
+    public ResponseDTO<List<TripResponse>> searchTrips(@RequestParam(required = false) String name,
+                                                       @RequestParam(required = false) String date,
+                                                       @RequestParam(required = false) Long member) {
+        List<TripResponse> tripResponseList;
 
         if (name == null && date == null && member == null) {
             tripResponseList = tripService.getAllTrips();
