@@ -20,6 +20,7 @@ import com.Dodutch_Server.global.config.aws.AmazonS3Manager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,7 +38,7 @@ public class ExpenseService {
     private final AmazonS3Manager s3Manager;
 
     @Transactional
-    public void addExpense(Long tripId, Long memberId,ExpenseRequestDTO request) {
+    public void addExpense(Long tripId, Long memberId,ExpenseRequestDTO request, MultipartFile expenseImage) {
         // tripId로 TripMember 테이블에서 멤버 조회
         List<TripMember> tripMembers = tripMemberRepository.findByTripId(tripId);
 
@@ -66,7 +67,7 @@ public class ExpenseService {
         }
 
         // 결제자(Member) 조회
-        Member payer = memberRepository.findById(memberId)
+        Member payer = memberRepository.findById(request.getPayer())
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         // Trip 조회
@@ -74,7 +75,7 @@ public class ExpenseService {
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.TRIP_NOT_EXIST));
 
         Uuid ExpenseUuid = uuidRepository.save(Uuid.builder().uuid(UUID.randomUUID().toString()).build());
-        String expenseImageUrl = s3Manager.uploadFile(s3Manager.generateExpenseKeyName(ExpenseUuid), request.getExpenseImage());
+        String expenseImageUrl = s3Manager.uploadFile(s3Manager.generateExpenseKeyName(ExpenseUuid), expenseImage);
 
         // Expense 생성 및 저장
         Expense expense = Expense.builder()
@@ -82,6 +83,7 @@ public class ExpenseService {
                 .expenseCategory(request.getExpenseCategory())
                 .amount(request.getAmount())
                 .expenseDate(request.getExpenseDate())
+                .memo(request.getMemo())
                 .payer(payer)
                 .trip(trip)
                 .expenseImageUrl(expenseImageUrl)

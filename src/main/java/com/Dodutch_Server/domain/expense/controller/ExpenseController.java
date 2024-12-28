@@ -6,10 +6,15 @@ import com.Dodutch_Server.domain.expense.dto.ExpenseResponseDTO;
 import com.Dodutch_Server.global.common.ResponseDTO;
 import com.Dodutch_Server.domain.expense.service.ExpenseService;
 import com.Dodutch_Server.global.common.apiPayload.ApiResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -22,16 +27,29 @@ public class ExpenseController {
 
     private final ExpenseService expenseService;
 
-    @PostMapping("/{tripId}/expense")
+    @PostMapping(value = "/{tripId}/expense", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "지출 생성 API")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
     })
-    public ApiResponse<Object> addExpense(@PathVariable Long tripId, @RequestBody ExpenseRequestDTO request) {
+    public ApiResponse<Object> addExpense(@PathVariable("tripId") Long tripId,
+                                          @RequestPart("request") @Valid String requestJson,
+                                          @RequestPart(value = "expenseImage", required = false) MultipartFile expenseImage) {
 
         Long memberId = SecurityUtil.getCurrentUserId();
 
-        expenseService.addExpense(tripId,memberId, request);
+        // JSON 문자열을 DTO로 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+        ExpenseRequestDTO request;
+        try {
+            request = objectMapper.readValue(requestJson, ExpenseRequestDTO.class);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Invalid JSON format in 'request' field", e);
+        }
+
+
+        expenseService.addExpense(tripId,memberId, request, expenseImage);
 
         return ApiResponse.onSuccess();
     }
