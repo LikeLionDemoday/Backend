@@ -15,5 +15,4 @@ public interface TripMemberRepository extends JpaRepository<TripMember, Long> {
     List<TripMember> findByTripId(Long tripId);
     @Query("SELECT tm.trip.id FROM TripMember tm WHERE tm.member.id = :memberId")
     List<Long> findTripIdsByMemberId(@Param("memberId") Long memberId);
-
 }

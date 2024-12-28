@@ -16,5 +16,5 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
             "FROM Expense e WHERE e.trip.id = :tripId GROUP BY e.category")
     List<Map<String, Object>> findCategoryCostsByTripId(@Param("tripId") Long tripId);
     List<Expense> findByTripIdOrderByExpenseDateAsc(Long tripId);
-
+    List<Expense> findByTripId(Long tripId);
 }

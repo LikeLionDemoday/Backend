@@ -1,12 +1,14 @@
 package com.Dodutch_Server.domain.dutch.controller;
 
+import com.Dodutch_Server.domain.dutch.dto.DutchDTO;
 import com.Dodutch_Server.domain.dutch.entity.Dutch;
 import com.Dodutch_Server.domain.dutch.repository.DutchRepository;
+import com.Dodutch_Server.domain.dutch.service.DutchService;
 import com.Dodutch_Server.domain.trip.repository.TripRepository;
-import com.Dodutch_Server.global.common.apiPayload.ApiResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +22,7 @@ import java.util.Optional;
 public class DutchController {
     private final DutchRepository dutchRepository;
     private final TripRepository tripRepository;
+    private final DutchService dutchService;
 
     private boolean isValidTrip(Long tripId) {
         return tripRepository.existsById(tripId);
@@ -27,7 +30,7 @@ public class DutchController {
 
     @GetMapping("/dutch")
     public ResponseEntity<?> getAllDutchList() {
-        List<Dutch> dutchList = dutchRepository.findAll();
+        List<Dutch> dutchList = dutchRepository.findAll(Sort.by(Sort.Order.desc("createdAt")));
         return ResponseEntity.ok().body(
                 new ApiResponse<>(true, "200", "성공", Map.of("dutch", dutchList))
         );
@@ -87,6 +90,19 @@ public class DutchController {
         );
     }
 
+    @PostMapping("/trip/{tripId}/dutch/calculate")
+    public ResponseEntity<?> calculateDutch(@PathVariable Long tripId) {
+        if (!isValidTrip(tripId)) {
+            return ResponseEntity.status(404).body(
+                    new ApiResponse<>(false, "404", "해당 여행이 존재하지 않습니다", null)
+            );
+        }
+
+        List<DutchDTO> calculatedDutchList = dutchService.calculateDutch(tripId);
+        return ResponseEntity.ok().body(
+                new ApiResponse<>(true, "200", "정산 계산 성공", Map.of("calculatedDutch", calculatedDutchList))
+        );
+    }
 
     @Getter
     @Setter
