@@ -1,6 +1,7 @@
 package com.Dodutch_Server.domain.trip.entity;
 
 import com.Dodutch_Server.domain.expense.entity.Expense;
+import com.Dodutch_Server.domain.trip.dto.request.TripUpdateRequestDTO;
 import com.Dodutch_Server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,4 +34,12 @@ public class Trip extends BaseEntity {
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Expense> expenses = new ArrayList<>();
+
+    public void updateTripInfo(TripUpdateRequestDTO request){
+        this.name = request.getTripName();
+        this.startDate = request.getStartDate();
+        this.endDate = request.getEndDate();
+        this.place = request.getPlace();
+        this.budget = request.getBudget();
+    }
 }
