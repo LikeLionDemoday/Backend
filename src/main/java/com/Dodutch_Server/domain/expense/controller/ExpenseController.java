@@ -1,9 +1,13 @@
 package com.Dodutch_Server.domain.expense.controller;
 
+import com.Dodutch_Server.domain.auth.util.SecurityUtil;
 import com.Dodutch_Server.domain.expense.dto.ExpenseRequestDTO;
 import com.Dodutch_Server.domain.expense.dto.ExpenseResponseDTO;
 import com.Dodutch_Server.global.common.ResponseDTO;
 import com.Dodutch_Server.domain.expense.service.ExpenseService;
+import com.Dodutch_Server.global.common.apiPayload.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,22 +17,23 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/trip")
+@Tag(name = "Expense", description = "지출 관련된 API")
 public class ExpenseController {
 
     private final ExpenseService expenseService;
 
     @PostMapping("/{tripId}/expense")
-    public ResponseDTO<Void> addExpense(@PathVariable Long tripId, @RequestBody ExpenseRequestDTO request) {
-        try {
-            // 서비스 호출
-            expenseService.addExpense(tripId, request);
+    @Operation(summary = "지출 생성 API")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
+    })
+    public ApiResponse<Object> addExpense(@PathVariable Long tripId, @RequestBody ExpenseRequestDTO request) {
 
-            // 성공 응답 생성 및 반환
-            return createSuccessResponse("201", "지출이 추가되었습니다.", null);
-        } catch (IllegalArgumentException e) {
-            // 실패 응답 생성 및 반환
-            return createErrorResponse("400", e.getMessage());
-        }
+        Long memberId = SecurityUtil.getCurrentUserId();
+
+        expenseService.addExpense(tripId,memberId, request);
+
+        return ApiResponse.onSuccess();
     }
 
     @GetMapping("/{tripId}/expense/date")
@@ -55,25 +60,25 @@ public class ExpenseController {
         }
     }
 
-    @PatchMapping("/{tripId}/expense/{expenseId}")
-    public ResponseDTO<Void> updateExpense(@PathVariable Long tripId, @PathVariable Long expenseId, @RequestBody ExpenseRequestDTO request) {
-        try {
-            expenseService.updateExpense(tripId, expenseId, request);
-            return createSuccessResponse("200", "지출이 수정되었습니다.", null);
-        } catch (IllegalArgumentException e) {
-            return createErrorResponse("400", e.getMessage());
-        }
-    }
+//    @PatchMapping("/{tripId}/expense/{expenseId}")
+//    public ResponseDTO<Void> updateExpense(@PathVariable Long tripId, @PathVariable Long expenseId, @RequestBody ExpenseRequestDTO request) {
+//        try {
+//            expenseService.updateExpense(tripId, expenseId, request);
+//            return createSuccessResponse("200", "지출이 수정되었습니다.", null);
+//        } catch (IllegalArgumentException e) {
+//            return createErrorResponse("400", e.getMessage());
+//        }
+//    }
 
-    @DeleteMapping("/{tripId}/expense/{expenseId}")
-    public ResponseDTO<Void> deleteExpense(@PathVariable Long tripId, @PathVariable Long expenseId) {
-        try {
-            expenseService.deleteExpense(tripId, expenseId);
-            return createSuccessResponse("200", "지출이 삭제되었습니다.", null);
-        } catch (IllegalArgumentException e) {
-            return createErrorResponse("400", e.getMessage());
-        }
-    }
+//    @DeleteMapping("/{tripId}/expense/{expenseId}")
+//    public ResponseDTO<Void> deleteExpense(@PathVariable Long tripId, @PathVariable Long expenseId) {
+//        try {
+//            expenseService.deleteExpense(tripId, expenseId);
+//            return createSuccessResponse("200", "지출이 삭제되었습니다.", null);
+//        } catch (IllegalArgumentException e) {
+//            return createErrorResponse("400", e.getMessage());
+//        }
+//    }
 
 
     private <T> ResponseDTO<T> createSuccessResponse(String code, String message, T data) {

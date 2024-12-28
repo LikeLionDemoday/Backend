@@ -3,25 +3,32 @@ package com.Dodutch_Server.domain.expense.entity;
 import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.trip.entity.Trip;
 import com.Dodutch_Server.global.common.BaseEntity;
+import com.Dodutch_Server.global.enums.ExpenseCategory;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
+
 @Entity
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Setter
 public class Expense extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String content;
-    private Integer cost;
-    private String category;
+    private String title;
+    private int amount;
+    @Enumerated(EnumType.STRING)
+    private ExpenseCategory expenseCategory;
     private LocalDate expenseDate;
+    private String memo;
+    private String expenseImageUrl;
 
     @ManyToOne
     @JoinColumn(name = "payer", nullable = true)
