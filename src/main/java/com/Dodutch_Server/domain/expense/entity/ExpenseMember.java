@@ -1,5 +1,6 @@
 package com.Dodutch_Server.domain.expense.entity;
 
+import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.trip.entity.TripMember;
 import com.Dodutch_Server.global.common.BaseEntity;
 import jakarta.persistence.*;

@@ -4,6 +4,8 @@ import com.Dodutch_Server.domain.dutch.dto.DutchDTO;
 import com.Dodutch_Server.domain.dutch.entity.Dutch;
 import com.Dodutch_Server.domain.dutch.repository.DutchRepository;
 import com.Dodutch_Server.domain.dutch.service.DutchService;
+import com.Dodutch_Server.domain.trip.entity.TripMember;
+import com.Dodutch_Server.domain.trip.repository.TripMemberRepository;
 import com.Dodutch_Server.domain.trip.repository.TripRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -23,6 +26,7 @@ public class DutchController {
     private final DutchRepository dutchRepository;
     private final TripRepository tripRepository;
     private final DutchService dutchService;
+    private final TripMemberRepository tripMemberRepository;
 
     private boolean isValidTrip(Long tripId) {
         return tripRepository.existsById(tripId);
@@ -30,9 +34,12 @@ public class DutchController {
 
     @GetMapping("/dutch")
     public ResponseEntity<?> getAllDutchList() {
-        List<Dutch> dutchList = dutchRepository.findAll(Sort.by(Sort.Order.desc("createdAt")));
+        List<DutchResponseDTO> responseDTOs = dutchRepository.findAll(Sort.by(Sort.Order.desc("createdAt")))
+                .stream()
+                .map(DutchResponseDTO::fromEntity)
+                .collect(Collectors.toList());
         return ResponseEntity.ok().body(
-                new ApiResponse<>(true, "200", "성공", Map.of("dutch", dutchList))
+                new ApiResponse<>(true, "200", "성공", Map.of("dutch", responseDTOs))
         );
     }
 
@@ -44,9 +51,12 @@ public class DutchController {
             );
         }
 
-        List<Dutch> dutchList = dutchRepository.findByTripId(tripId);
+        List<DutchResponseDTO> responseDTOs = dutchRepository.findByTripId(tripId)
+                .stream()
+                .map(DutchResponseDTO::fromEntity)
+                .collect(Collectors.toList());
         return ResponseEntity.ok().body(
-                new ApiResponse<>(true, "200", "성공", Map.of("dutch", dutchList))
+                new ApiResponse<>(true, "200", "성공", Map.of("dutch", responseDTOs))
         );
     }
 
@@ -60,8 +70,9 @@ public class DutchController {
 
         Optional<Dutch> dutch = dutchRepository.findByTripIdAndId(tripId, dutchId);
         if (dutch.isPresent()) {
+            DutchResponseDTO responseDTO = DutchResponseDTO.fromEntity(dutch.get());
             return ResponseEntity.ok().body(
-                    new ApiResponse<>(true, "200", "성공", dutch.get())
+                    new ApiResponse<>(true, "200", "성공", responseDTO)
             );
         }
         return ResponseEntity.status(404).body(
@@ -81,8 +92,12 @@ public class DutchController {
         if (optionalDutch.isPresent()) {
             Dutch dutch = optionalDutch.get();
             dutch.setIsCompleted(request.getIsCompleted());
+            dutchRepository.save(dutch);
+
+            DutchResponseDTO responseDTO = DutchResponseDTO.fromEntity(dutch);
+
             return ResponseEntity.ok().body(
-                    new ApiResponse<>(true, "200", "성공", dutch)
+                    new ApiResponse<>(true, "200", "성공", responseDTO)
             );
         }
         return ResponseEntity.status(404).body(
@@ -98,11 +113,20 @@ public class DutchController {
             );
         }
 
-        List<DutchDTO> calculatedDutchList = dutchService.calculateDutch(tripId);
+        List<DutchDTO> calculatedDutchList = dutchService.calculateSettlement(tripId);
+
+        dutchService.saveSettlementToDatabase(tripId, calculatedDutchList);
+
         return ResponseEntity.ok().body(
                 new ApiResponse<>(true, "200", "정산 계산 성공", Map.of("calculatedDutch", calculatedDutchList))
         );
     }
+
+    @GetMapping("/test/{tripId}")
+    public ApiResponse<List<TripMember>> testTripMember(@PathVariable Long tripId){
+        return new ApiResponse<>(true,"200","성공",tripMemberRepository.findByTripId(tripId));
+    }
+
 
     @Getter
     @Setter
@@ -117,6 +141,26 @@ public class DutchController {
             this.code = code;
             this.message = message;
             this.data = data;
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class DutchResponseDTO {
+        private Long id;
+        private Long payerId;
+        private Long payeeId;
+        private Integer perCost;
+        private Boolean isCompleted;
+
+        public static DutchResponseDTO fromEntity(Dutch dutch) {
+            DutchResponseDTO dto = new DutchResponseDTO();
+            dto.setId(dutch.getId());
+            dto.setPayerId(dutch.getPayer() != null ? dutch.getPayer().getId() : null);
+            dto.setPayeeId(dutch.getPayee() != null ? dutch.getPayee().getId() : null);
+            dto.setPerCost(dutch.getPerCost());
+            dto.setIsCompleted(dutch.getIsCompleted());
+            return dto;
         }
     }
 
