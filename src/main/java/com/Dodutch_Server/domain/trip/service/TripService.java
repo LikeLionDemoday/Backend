@@ -140,30 +140,35 @@ public class TripService {
 
 
     // 참여 코드 반환
+    @Transactional
     public String getJoinCode(Long tripId){
         return tripRepository.findById(tripId).get().getJoinCode();
     }
 
     // 여행 조회
+    @Transactional
     public Trip getTripById(Long tripId) {
         return tripRepository.findById(tripId).orElseThrow(() ->
                 new IllegalArgumentException("해당 여행이 존재하지 않습니다"));
     }
 
     // 여행 삭제
+    @Transactional
     public void deleteTrip(Long tripId) {
         Trip trip = getTripById(tripId);
         tripRepository.delete(trip);
     }
 
     // 여행 수정
-   public void updateTrip(Long tripId, TripUpdateRequestDTO request) {
+   @Transactional
+    public void updateTrip(Long tripId, TripUpdateRequestDTO request) {
         Trip updateTrip  = getTripById(tripId);
-       updateTrip.updateTripInfo(request);
+        updateTrip.updateTripInfo(request);
         tripRepository.save(updateTrip);
     }
 
 
+    @Transactional
     public List<TripResponse> searchTrips(String name, String date, Long memberId) {
         Integer parsedYear = null;
 
@@ -191,6 +196,7 @@ public class TripService {
     }
 
 
+    @Transactional
     public List<TripResponse> getAllTrips() {
         return tripRepository.findAll().stream()
                 .map(this::convertToTripResponseV2)

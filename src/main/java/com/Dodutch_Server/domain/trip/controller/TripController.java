@@ -46,6 +46,9 @@ public class TripController {
 
     @PostMapping("/join")
     @Operation(summary = "여행 참여 API")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
+    })
     public ApiResponse<Object> joinTripWithCode(@RequestBody TripJoinRequestDto request) {
         Long memberId = SecurityUtil.getCurrentUserId();
 
@@ -56,6 +59,9 @@ public class TripController {
 
     @GetMapping("/share/{tripId}")
     @Operation(summary = "여행 공유시 정보 반환 API")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
+    })
     public ApiResponse<TripResponseDTO> getTripInfo(@PathVariable Long tripId) {
 
         return ApiResponse.onSuccess(tripService.convertToTripResponse(tripId));
@@ -64,6 +70,9 @@ public class TripController {
 
     @GetMapping("/{tripId}")
     @Operation(summary = "여행 목록 조회")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
+    })
     public ApiResponse<TripResponse>getTrip(@PathVariable Long tripId) {
         Trip trip = tripService.getTripById(tripId);
         return ApiResponse.onSuccess(tripService.convertToTripResponseV2(trip));
@@ -72,6 +81,9 @@ public class TripController {
 
     @PatchMapping("/{tripId}")
     @Operation(summary = "여행 수정 API")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
+    })
     public ApiResponse<Object> updateTrip(@PathVariable Long tripId, @RequestBody TripUpdateRequestDTO request) {
 
         tripService.updateTrip(tripId, request);
@@ -81,6 +93,10 @@ public class TripController {
 
 
     @DeleteMapping("/{tripId}")
+    @Operation(summary = "여행 삭제 API")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
+    })
     public ResponseDTO<Object> deleteTrip(@PathVariable Long tripId) {
         try {
             tripService.deleteTrip(tripId);
@@ -91,6 +107,10 @@ public class TripController {
     }
 
     @GetMapping("/search")
+    @Operation(summary = "여행 검색 API")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
+    })
     public ResponseDTO<List<TripResponse>> searchTrips(@RequestParam(required = false) String name,
                                                        @RequestParam(required = false) String date,
                                                        @RequestParam(required = false) Long member) {
