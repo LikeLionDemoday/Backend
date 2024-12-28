@@ -9,16 +9,18 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Builder
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExpenseRequestDTO {
+public class ExpenseInfoDto {
 
-    private Long payer;
     private String title;        // 내용
     private ExpenseCategory expenseCategory;     // 카테고리
-    private int amount;      // 전체 결제 금액
+    private int amount;
+    @JsonFormat(pattern = "yyyy-MM-dd")// 전체 결제 금액
     private LocalDate expenseDate;      // 날짜
+    private MultipartFile expenseImage;    // 이미지 URL
     private String memo;
     private List<MemberShareDTO> members; // 멤버 정보 리스트
 

@@ -3,6 +3,7 @@ package com.Dodutch_Server.domain.trip.service;
 import com.Dodutch_Server.domain.member.repository.MemberRepository;
 import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.trip.dto.request.TripRequestDTO;
+import com.Dodutch_Server.domain.trip.dto.request.TripUpdateRequestDTO;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponse;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponseDTO;
 import com.Dodutch_Server.domain.trip.entity.Trip;
@@ -139,33 +140,35 @@ public class TripService {
 
 
     // 참여 코드 반환
+    @Transactional
     public String getJoinCode(Long tripId){
         return tripRepository.findById(tripId).get().getJoinCode();
     }
 
     // 여행 조회
+    @Transactional
     public Trip getTripById(Long tripId) {
         return tripRepository.findById(tripId).orElseThrow(() ->
                 new IllegalArgumentException("해당 여행이 존재하지 않습니다"));
     }
 
     // 여행 삭제
+    @Transactional
     public void deleteTrip(Long tripId) {
         Trip trip = getTripById(tripId);
         tripRepository.delete(trip);
     }
 
     // 여행 수정
-    public Trip updateTrip(Trip trip, TripRequestDTO tripRequestDTO) {
-        if (tripRequestDTO.getTripName() != null) trip.setName(tripRequestDTO.getTripName());
-        if (tripRequestDTO.getStartDate() != null) trip.setStartDate(tripRequestDTO.getStartDate());
-        if (tripRequestDTO.getEndDate() != null) trip.setEndDate(tripRequestDTO.getEndDate());
-        if (tripRequestDTO.getPlace() != null) trip.setPlace(tripRequestDTO.getPlace());
-        if (tripRequestDTO.getBudget() != null) trip.setBudget(tripRequestDTO.getBudget());
-        return tripRepository.save(trip);
+   @Transactional
+    public void updateTrip(Long tripId, TripUpdateRequestDTO request) {
+        Trip updateTrip  = getTripById(tripId);
+        updateTrip.updateTripInfo(request);
+        tripRepository.save(updateTrip);
     }
 
 
+    @Transactional
     public List<TripResponse> searchTrips(String name, String date, Long memberId) {
         Integer parsedYear = null;
 
@@ -193,6 +196,7 @@ public class TripService {
     }
 
 
+    @Transactional
     public List<TripResponse> getAllTrips() {
         return tripRepository.findAll().stream()
                 .map(this::convertToTripResponseV2)
