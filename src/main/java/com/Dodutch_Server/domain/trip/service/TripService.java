@@ -1,5 +1,6 @@
 package com.Dodutch_Server.domain.trip.service;
 
+import com.Dodutch_Server.domain.auth.util.SecurityUtil;
 import com.Dodutch_Server.domain.member.repository.MemberRepository;
 import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.trip.dto.request.TripRequestDTO;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -67,7 +69,6 @@ public class TripService {
 
         tripMemberRepository.save(tripMember);
 
-
         return savedTrip.getId();
     }
 
@@ -78,6 +79,7 @@ public class TripService {
         // 참여 코드로 Trip 찾기
         Trip findTrip = tripRepository.findByJoinCode(joinCode)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.TRIP_NOT_EXIST));
+
 
         Member findMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -137,6 +139,11 @@ public class TripService {
         return tripResponse;
     }
 
+    public TripResponse getTripResponseById(Long tripId) {
+        Trip findTrip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.TRIP_NOT_EXIST));
+        return convertToTripResponseV2(findTrip); // Trip -> TripResponse 변환
+    }
 
 
     // 참여 코드 반환
@@ -168,37 +175,49 @@ public class TripService {
     }
 
 
-    @Transactional
-    public List<TripResponse> searchTrips(String name, String date, Long memberId) {
-        Integer parsedYear = null;
-
-        // 연도만 추출
-        if (date != null) {
-            try {
-                parsedYear = Integer.parseInt(date);  // 연도만 받기
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("잘못된 연도 형식입니다: " + date);
-            }
-        }
-
-        // memberId로 tripId 리스트 조회
-        List<Long> tripIds = (memberId != null) ? tripMemberRepository.findTripIdsByMemberId(memberId) : null;
-
-        // TripRepository에서 검색 수행
-        List<Trip> trips = tripRepository.searchTrips(
-                (name != null ? name.trim().replaceAll("\"", "") : null),
-                parsedYear,
-                tripIds
-        );
-
-        // 검색 결과를 DTO로 변환
-        return trips.stream().map(this::convertToTripResponseV2).collect(Collectors.toList());
-    }
+//    @Transactional
+//    public List<TripResponse> searchTrips(String name, String date, Long memberId) {
+//        Integer parsedYear = null;
+//
+//        // 연도만 추출
+//        if (date != null) {
+//            try {
+//                parsedYear = Integer.parseInt(date);  // 연도만 받기
+//            } catch (NumberFormatException e) {
+//                throw new IllegalArgumentException("잘못된 연도 형식입니다: " + date);
+//            }
+//        }
+//
+//        // memberId로 tripId 리스트 조회
+//        List<Long> tripIds = (memberId != null) ? tripMemberRepository.findTripIdsByMemberId(memberId) : null;
+//
+//        // TripRepository에서 검색 수행
+//        List<Trip> trips = tripRepository.searchTrips(
+//                (name != null ? name.trim().replaceAll("\"", "") : null),
+//                parsedYear,
+//                tripIds
+//        );
+//
+//        // 검색 결과를 DTO로 변환
+//        return trips.stream().map(this::convertToTripResponseV2).collect(Collectors.toList());
+//    }
 
 
     @Transactional
     public List<TripResponse> getAllTrips() {
-        return tripRepository.findAll().stream()
+        Long memberId = SecurityUtil.getCurrentUserId();
+
+        List<Long> tripIds = tripMemberRepository.findTripIdsByMemberId(memberId);
+
+        if (tripIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Trip> trips = tripRepository.findAllById(tripIds);
+
+        trips.sort((t1, t2) -> t2.getStartDate().compareTo(t1.getStartDate()));
+
+        return trips.stream()
                 .map(this::convertToTripResponseV2)
                 .collect(Collectors.toList());
     }

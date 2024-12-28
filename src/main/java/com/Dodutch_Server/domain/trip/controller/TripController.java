@@ -69,13 +69,13 @@ public class TripController {
     }
 
     @GetMapping("/{tripId}")
-    @Operation(summary = "여행 목록 조회")
+    @Operation(summary = "여행 정보 반환 API")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
     })
     public ApiResponse<TripResponse>getTrip(@PathVariable Long tripId) {
-        Trip trip = tripService.getTripById(tripId);
-        return ApiResponse.onSuccess(tripService.convertToTripResponseV2(trip));
+        TripResponse tripResponse = tripService.getTripResponseById(tripId);
+        return ApiResponse.onSuccess(tripResponse);
     }
 
 
@@ -111,22 +111,11 @@ public class TripController {
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
     })
-    public ResponseDTO<List<TripResponse>> searchTrips(@RequestParam(required = false) String name,
-                                                       @RequestParam(required = false) String date,
-                                                       @RequestParam(required = false) Long member) {
-        List<TripResponse> tripResponseList;
+    public ApiResponse<List<TripResponse>> getMyTrips() {
 
-        if (name == null && date == null && member == null) {
-            tripResponseList = tripService.getAllTrips();
-        } else {
-            tripResponseList = tripService.searchTrips(name, date, member);
-        }
+        List<TripResponse> trips = tripService.getAllTrips();
 
-        if (tripResponseList.isEmpty()) {
-            return createErrorResponse("200", "해당하는 여행이 없습니다");
-        }
-
-        return createSuccessResponse("200", "여행 검색 성공", tripResponseList);
+        return ApiResponse.onSuccess(trips);
     }
 
     // 공통 응답 생성 메소드 (성공)
