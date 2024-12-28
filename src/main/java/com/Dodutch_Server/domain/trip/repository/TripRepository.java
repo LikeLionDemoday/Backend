@@ -21,5 +21,7 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
             @Param("tripIds") List<Long> tripIds);
     Optional<Trip> findByJoinCode(String joinCode);
 
+    boolean existsByJoinCode(String joinCode);
+
 
 }

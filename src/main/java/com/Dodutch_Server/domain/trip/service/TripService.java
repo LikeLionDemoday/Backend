@@ -2,27 +2,28 @@ package com.Dodutch_Server.domain.trip.service;
 
 import com.Dodutch_Server.domain.member.repository.MemberRepository;
 import com.Dodutch_Server.domain.member.entity.Member;
-import com.Dodutch_Server.domain.trip.dto.TripAddMemberRequestDTO;
-import com.Dodutch_Server.domain.trip.dto.TripRequestDTO;
-import com.Dodutch_Server.domain.trip.dto.TripResponseDTO;
+import com.Dodutch_Server.domain.trip.dto.request.TripRequestDTO;
+import com.Dodutch_Server.domain.trip.dto.response.TripResponse;
+import com.Dodutch_Server.domain.trip.dto.response.TripResponseDTO;
 import com.Dodutch_Server.domain.trip.entity.Trip;
 import com.Dodutch_Server.domain.trip.entity.TripMember;
 import com.Dodutch_Server.domain.trip.repository.TripMemberRepository;
 import com.Dodutch_Server.domain.trip.repository.TripRepository;
-import com.Dodutch_Server.global.common.ResponseDTO;
+import com.Dodutch_Server.domain.trip.util.RandomStringGenerator;
+import com.Dodutch_Server.domain.uuid.entity.Uuid;
+import com.Dodutch_Server.domain.uuid.repository.UuidRepository;
+import com.Dodutch_Server.global.common.apiPayload.code.status.ErrorStatus;
+import com.Dodutch_Server.global.common.exception.handler.ErrorHandler;
+import com.Dodutch_Server.global.config.aws.AmazonS3Manager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 
-import java.util.Optional;
-
-@Transactional
 @Service
 @RequiredArgsConstructor
 public class TripService {
@@ -30,23 +31,101 @@ public class TripService {
     private final TripRepository tripRepository;
     private final MemberRepository memberRepository;
     private final TripMemberRepository tripMemberRepository;
+    private final UuidRepository uuidRepository;
+    private final AmazonS3Manager s3Manager;
+
+    // 여행 생성
+    @Transactional
+    public Long createTrip(TripRequestDTO request, Long memberId){
+
+        Uuid mainUuid = uuidRepository.save(Uuid.builder().uuid(UUID.randomUUID().toString()).build());
+        String tripImageUrl = s3Manager.uploadFile(s3Manager.generateMainKeyName(mainUuid), request.getTripImage());
+
+        String joinCode = RandomStringGenerator.generateRandomString(12);
+
+        Trip trip = Trip.builder()
+                .tripImageUrl(tripImageUrl)
+                .name(request.getTripName())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .place(request.getPlace())
+                .budget(request.getBudget())
+                .totalCost(0)
+                .joinCode(joinCode)
+                .build();
+
+        Trip savedTrip = tripRepository.save(trip); // TripRepository 인스턴스를 통해 save 호출
+
+        Member findMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.NOT_EXIST_USER));
+
+        TripMember tripMember = TripMember.builder()
+                .member(findMember)
+                .trip(savedTrip)
+                .build();
+
+        tripMemberRepository.save(tripMember);
 
 
-    public TripResponseDTO convertToTripResponse(Trip trip) {
-        TripResponseDTO tripResponse = new TripResponseDTO();
+        return savedTrip.getId();
+    }
+
+    // 여행 참여
+    @Transactional
+    public void addMemberToTrip(String joinCode, Long memberId) {
+
+        // 참여 코드로 Trip 찾기
+        Trip findTrip = tripRepository.findByJoinCode(joinCode)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.TRIP_NOT_EXIST));
+
+        Member findMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // TripMember 중복 체크
+        boolean isMemberAlreadyInTrip = findTrip.getTripMembers().stream()
+                .anyMatch(tripMember -> tripMember.getMember().getId().equals(memberId));
+
+        if (isMemberAlreadyInTrip) {
+            throw new ErrorHandler(ErrorStatus.TRIP_MEMBER_EXIST);
+        }
+
+        TripMember tripMember = TripMember.builder()
+                .trip(findTrip)
+                .member(findMember)
+                .build();
+
+        tripMemberRepository.save(tripMember);
+
+    }
+
+
+    public TripResponseDTO convertToTripResponse(Long tripId) {
+        Trip findTrip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.TRIP_NOT_EXIST));
+        return TripResponseDTO.builder()
+                .tripImageUrl(findTrip.getTripImageUrl())
+                .startDate(findTrip.getStartDate())
+                .endDate(findTrip.getEndDate())
+                .name(findTrip.getName())
+                .place(findTrip.getPlace())
+                .joinCode(findTrip.getJoinCode())
+                .build();
+    }
+
+    public TripResponse convertToTripResponseV2(Trip trip) {
+        TripResponse tripResponse = new TripResponse();
         tripResponse.setTripId(trip.getId());
         tripResponse.setTripName(trip.getName());
         tripResponse.setStartDate(trip.getStartDate().toString());
         tripResponse.setEndDate(trip.getEndDate().toString());
         tripResponse.setPlace(trip.getPlace());
         tripResponse.setBudget(trip.getBudget().longValue());
-        tripResponse.setMemo(trip.getMemo());
         tripResponse.setTotalCost(trip.getTotalCost()); // totalCost 추가
 
         // TripMember에서 해당 Trip에 속한 Member ID 리스트 생성
-        List<TripResponseDTO.MemberDTO> memberDTOList = trip.getTripMembers().stream()
+        List<TripResponse.MemberDTO> memberDTOList = trip.getTripMembers().stream()
                 .map(tripMember -> {
-                    TripResponseDTO.MemberDTO memberDTO = new TripResponseDTO.MemberDTO();
+                    TripResponse.MemberDTO memberDTO = new TripResponse.MemberDTO();
                     memberDTO.setMemberID(tripMember.getMember().getId());
                     return memberDTO;
                 })
@@ -55,6 +134,13 @@ public class TripService {
         tripResponse.setMembers(memberDTOList);
 
         return tripResponse;
+    }
+
+
+
+    // 참여 코드 반환
+    public String getJoinCode(Long tripId){
+        return tripRepository.findById(tripId).get().getJoinCode();
     }
 
     // 여행 조회
@@ -76,36 +162,11 @@ public class TripService {
         if (tripRequestDTO.getEndDate() != null) trip.setEndDate(tripRequestDTO.getEndDate());
         if (tripRequestDTO.getPlace() != null) trip.setPlace(tripRequestDTO.getPlace());
         if (tripRequestDTO.getBudget() != null) trip.setBudget(tripRequestDTO.getBudget());
-        if (tripRequestDTO.getMemo() != null) trip.setMemo(tripRequestDTO.getMemo());
         return tripRepository.save(trip);
     }
 
-    public void addMemberToTrip(Long tripId, Long memberId) {
-        // 여행 조회
-        Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 여행이 존재하지 않습니다."));
 
-        // 멤버 조회
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 멤버가 존재하지 않습니다."));
-
-        // TripMember 중복 체크
-        boolean isMemberAlreadyInTrip = trip.getTripMembers().stream()
-                .anyMatch(tripMember -> tripMember.getMember().getId().equals(memberId));
-
-        if (isMemberAlreadyInTrip) {
-            throw new IllegalArgumentException("멤버가 이미 여행에 추가되어 있습니다.");
-        }
-
-        // TripMember 저장
-        TripMember tripMember = new TripMember();
-        tripMember.setTrip(trip);
-        tripMember.setMember(member);
-        tripMemberRepository.save(tripMember);
-    }
-
-
-    public List<TripResponseDTO> searchTrips(String name, String date, Long memberId) {
+    public List<TripResponse> searchTrips(String name, String date, Long memberId) {
         Integer parsedYear = null;
 
         // 연도만 추출
@@ -128,13 +189,13 @@ public class TripService {
         );
 
         // 검색 결과를 DTO로 변환
-        return trips.stream().map(this::convertToTripResponse).collect(Collectors.toList());
+        return trips.stream().map(this::convertToTripResponseV2).collect(Collectors.toList());
     }
 
 
-    public List<TripResponseDTO> getAllTrips() {
+    public List<TripResponse> getAllTrips() {
         return tripRepository.findAll().stream()
-                .map(this::convertToTripResponse)
+                .map(this::convertToTripResponseV2)
                 .collect(Collectors.toList());
     }
 

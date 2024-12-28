@@ -80,21 +80,10 @@ jobs:
       - name: docker stop container
         run: sudo docker stop $(sudo docker ps -q) 2>/dev/null || true
 
-      # 환경변수 디버깅
-      - name: debug secrets
-        run: |
-          echo "DB_URL=${{ secrets.DB_URL }}"
-          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}"
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
-          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}"
-          echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}"
-          echo "KAKAO_REDIRECT_URL=${{ secrets.KAKAO_REDIRECT_URL }}"
-          echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}"
-
 
       # 3. 최신 이미지를 컨테이너화하여 실행시킴
       - name: docker run new container
-        run: sudo docker run --name spring-cicd-test --rm -d -p 8080:8080 -e "DB_URL=${{ secrets.DB_URL }}" -e "DB_USERNAME=${{ secrets.DB_USERNAME }}" -e "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" -e "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" -e "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" -e "KAKAO_REDIRECT_URL=${{ secrets.KAKAO_REDIRECT_URL }}" ${{ secrets.DOCKERHUB_USERNAME }}/spring-cicd-test
+        run: sudo docker run --name spring-cicd-test --rm -d -p 8080:8080 -e "DB_URL=${{ secrets.DB_URL }}" -e "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" -e "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" -e "DB_USERNAME=${{ secrets.DB_USERNAME }}" -e "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" -e "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" -e "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" -e "KAKAO_REDIRECT_URL=${{ secrets.KAKAO_REDIRECT_URL }}" ${{ secrets.DOCKERHUB_USERNAME }}/spring-cicd-test
 
       
 

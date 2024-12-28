@@ -55,8 +55,8 @@ public class SecurityConfig {
          */
         //JWTFilter 등록
 
-//        http
-//                .addFilterBefore(new JwtFilter(jwtTokenProvider, memberRepository), UsernamePasswordAuthenticationFilter.class);
+        http
+                .addFilterBefore(new JwtFilter(jwtTokenProvider, memberRepository), UsernamePasswordAuthenticationFilter.class);
 
 
         //세션 방식 미사용

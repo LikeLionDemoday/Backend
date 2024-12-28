@@ -1,15 +1,13 @@
-package com.Dodutch_Server.domain.trip.dto;
-
+package com.Dodutch_Server.domain.trip.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
 
-
 @Getter
 @Setter
-public class TripResponseDTO {
+public class TripResponse {
     private Long tripId;        // 여행 ID
     private String tripName;    // 여행 이름
     private String startDate;   // 시작 날짜
