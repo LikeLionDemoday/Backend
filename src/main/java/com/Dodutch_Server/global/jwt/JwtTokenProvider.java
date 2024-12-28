@@ -23,7 +23,7 @@ import java.util.Random;
 @Service
 public class JwtTokenProvider implements InitializingBean {
 
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;            // 30분
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30 * 4 ;            // 2시간
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 14;  // 14일
 
     private final String secretKey; // Jwt 시크릿 키
