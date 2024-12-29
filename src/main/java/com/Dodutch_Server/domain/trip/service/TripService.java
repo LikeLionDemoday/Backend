@@ -1,11 +1,14 @@
 package com.Dodutch_Server.domain.trip.service;
 
+import com.Dodutch_Server.domain.auth.util.SecurityUtil;
 import com.Dodutch_Server.domain.member.repository.MemberRepository;
 import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.trip.dto.request.TripRequestDTO;
 import com.Dodutch_Server.domain.trip.dto.request.TripUpdateRequestDTO;
+import com.Dodutch_Server.domain.trip.dto.response.TripInfoResponseDto;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponse;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponseDTO;
+import com.Dodutch_Server.domain.trip.dto.response.TripShareResponseDto;
 import com.Dodutch_Server.domain.trip.entity.Trip;
 import com.Dodutch_Server.domain.trip.entity.TripMember;
 import com.Dodutch_Server.domain.trip.repository.TripMemberRepository;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -67,7 +71,6 @@ public class TripService {
 
         tripMemberRepository.save(tripMember);
 
-
         return savedTrip.getId();
     }
 
@@ -78,6 +81,7 @@ public class TripService {
         // 참여 코드로 Trip 찾기
         Trip findTrip = tripRepository.findByJoinCode(joinCode)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.TRIP_NOT_EXIST));
+
 
         Member findMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -100,10 +104,10 @@ public class TripService {
     }
 
 
-    public TripResponseDTO convertToTripResponse(Long tripId) {
+    public TripShareResponseDto convertToTripResponse(Long tripId) {
         Trip findTrip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.TRIP_NOT_EXIST));
-        return TripResponseDTO.builder()
+        return TripShareResponseDto.builder()
                 .tripImageUrl(findTrip.getTripImageUrl())
                 .startDate(findTrip.getStartDate())
                 .endDate(findTrip.getEndDate())
@@ -138,6 +142,52 @@ public class TripService {
     }
 
 
+    public TripInfoResponseDto convertToTripInfoResponse(Trip trip) {
+
+        TripInfoResponseDto tripInfoResponseDto = TripInfoResponseDto.builder()
+                .tripId(trip.getId())
+                .tripName(trip.getName())
+                .startDate(trip.getStartDate())
+                .endDate(trip.getEndDate())
+                .place(trip.getPlace())
+                .budget(trip.getBudget())
+                .totalCost(trip.getTotalCost())
+                .tripImageUrl(trip.getTripImageUrl())
+                .build();
+
+        // TripMember에서 Member 정보 추출 (memberId와 nickName)
+        List<TripInfoResponseDto.MemberDTO> memberDTOList = trip.getTripMembers().stream()
+                .map(tripMember -> {
+                    TripInfoResponseDto.MemberDTO memberDTO = new TripInfoResponseDto.MemberDTO();
+                    memberDTO.setMemberId(tripMember.getMember().getId());
+                    memberDTO.setNickName(tripMember.getMember().getNickName());
+                    return memberDTO;
+                })
+                .collect(Collectors.toList());
+
+        // Expense에서 expenseImageUrl 추출하여 PhotoDTO 생성
+        List<TripInfoResponseDto.PhotoDTO> photoDTOList = trip.getExpenses().stream()
+                .filter(expense -> expense.getExpenseImageUrl() != null) // 이미지 URL이 존재하는 경우만 필터링
+                .map(expense -> {
+                    TripInfoResponseDto.PhotoDTO photoDTO = new TripInfoResponseDto.PhotoDTO();
+                    photoDTO.setPhotoUrl(expense.getExpenseImageUrl());
+                    return photoDTO;
+                })
+                .collect(Collectors.toList());
+
+
+        tripInfoResponseDto.setMembers(memberDTOList);
+        tripInfoResponseDto.setPhotos(photoDTOList);
+
+        return tripInfoResponseDto;
+    }
+
+    public TripInfoResponseDto getTripResponseById(Long tripId) {
+        Trip findTrip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.TRIP_NOT_EXIST));
+        return convertToTripInfoResponse(findTrip); // Trip -> TripResponse 변환
+    }
+
 
     // 참여 코드 반환
     @Transactional
@@ -168,37 +218,49 @@ public class TripService {
     }
 
 
-    @Transactional
-    public List<TripResponse> searchTrips(String name, String date, Long memberId) {
-        Integer parsedYear = null;
-
-        // 연도만 추출
-        if (date != null) {
-            try {
-                parsedYear = Integer.parseInt(date);  // 연도만 받기
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("잘못된 연도 형식입니다: " + date);
-            }
-        }
-
-        // memberId로 tripId 리스트 조회
-        List<Long> tripIds = (memberId != null) ? tripMemberRepository.findTripIdsByMemberId(memberId) : null;
-
-        // TripRepository에서 검색 수행
-        List<Trip> trips = tripRepository.searchTrips(
-                (name != null ? name.trim().replaceAll("\"", "") : null),
-                parsedYear,
-                tripIds
-        );
-
-        // 검색 결과를 DTO로 변환
-        return trips.stream().map(this::convertToTripResponseV2).collect(Collectors.toList());
-    }
+//    @Transactional
+//    public List<TripResponse> searchTrips(String name, String date, Long memberId) {
+//        Integer parsedYear = null;
+//
+//        // 연도만 추출
+//        if (date != null) {
+//            try {
+//                parsedYear = Integer.parseInt(date);  // 연도만 받기
+//            } catch (NumberFormatException e) {
+//                throw new IllegalArgumentException("잘못된 연도 형식입니다: " + date);
+//            }
+//        }
+//
+//        // memberId로 tripId 리스트 조회
+//        List<Long> tripIds = (memberId != null) ? tripMemberRepository.findTripIdsByMemberId(memberId) : null;
+//
+//        // TripRepository에서 검색 수행
+//        List<Trip> trips = tripRepository.searchTrips(
+//                (name != null ? name.trim().replaceAll("\"", "") : null),
+//                parsedYear,
+//                tripIds
+//        );
+//
+//        // 검색 결과를 DTO로 변환
+//        return trips.stream().map(this::convertToTripResponseV2).collect(Collectors.toList());
+//    }
 
 
     @Transactional
     public List<TripResponse> getAllTrips() {
-        return tripRepository.findAll().stream()
+        Long memberId = SecurityUtil.getCurrentUserId();
+
+        List<Long> tripIds = tripMemberRepository.findTripIdsByMemberId(memberId);
+
+        if (tripIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Trip> trips = tripRepository.findAllById(tripIds);
+
+        trips.sort((t1, t2) -> t2.getStartDate().compareTo(t1.getStartDate()));
+
+        return trips.stream()
                 .map(this::convertToTripResponseV2)
                 .collect(Collectors.toList());
     }
