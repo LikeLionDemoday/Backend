@@ -60,9 +60,11 @@ public class SecurityConfig {
 
         http.cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
             CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedOrigins(Collections.singletonList("http://localhost:3000")); // 허용할 도메인
-            config.setAllowedOrigins(Collections.singletonList("https://dodutch.vercel.app")); // 허용할 도메인
-            config.setAllowedOrigins(Collections.singletonList("http://dodutch.vercel.app")); // 허용할 도메인
+            config.setAllowedOrigins(List.of(
+                    "http://localhost:3000",
+                    "https://dodutch.vercel.app",
+                    "http://dodutch.vercel.app"
+            )); // 허용할 도메인 설정
             config.setAllowedMethods(Collections.singletonList("*")); // 모든 메서드 허용
             config.setAllowCredentials(true); // 인증 정보 허용
             config.setAllowedHeaders(Collections.singletonList("*")); // 모든 헤더 허용

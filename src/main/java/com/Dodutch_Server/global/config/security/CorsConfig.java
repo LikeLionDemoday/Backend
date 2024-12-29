@@ -11,15 +11,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 @RequiredArgsConstructor
-public class CorsConfig  implements WebMvcConfigurer {
+public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000")
-                .allowedOrigins("https://dodutch.vercel.app")
-                .allowedOrigins("http://dodutch.vercel.app")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH")
-                .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowedOrigins(
+                        "http://localhost:3000",
+                        "https://dodutch.vercel.app",
+                        "http://dodutch.vercel.app"
+                ) // 허용할 여러 Origin 설정
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH") // 허용할 HTTP 메서드
+                .allowedHeaders("*") // 모든 헤더 허용
+                .allowCredentials(true); // 인증 정보 허용
     }
 }
+
