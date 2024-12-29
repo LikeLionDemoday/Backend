@@ -12,4 +12,5 @@ public interface DutchRepository extends JpaRepository<Dutch, Long> {
     Optional<Dutch> findByTripIdAndId(Long tripId, Long id);
     boolean existsByTripIdAndPayerIdAndPayeeIdAndPerCost(Long tripId, Long payerId, Long payeeId, Integer perCost);
     List<Dutch> findByPayerIdOrPayeeId(Long payerId, Long payeeId);
+    List<Dutch> findByPayerIdOrPayeeIdOrderByCreatedAtDesc(Long payerId, Long payeeId);
 }
