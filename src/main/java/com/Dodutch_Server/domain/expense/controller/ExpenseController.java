@@ -77,6 +77,19 @@ public class ExpenseController {
         }
     }
 
+    @GetMapping("/{tripId}/expense/{expenseId}")
+    public ResponseDTO<Map<String, Object>> getExpenseById(
+            @PathVariable Long tripId,
+            @PathVariable Long expenseId) {
+        try {
+            Map<String, Object> expenseDetails = expenseService.getExpenseById(tripId, expenseId);
+
+            return createSuccessResponse("200", "성공이요", expenseDetails);
+        } catch (IllegalArgumentException e) {
+            return createErrorResponse("400", e.getMessage());
+        }
+    }
+
 //    @PatchMapping("/{tripId}/expense/{expenseId}")
 //    public ResponseDTO<Void> updateExpense(@PathVariable Long tripId, @PathVariable Long expenseId, @RequestBody ExpenseRequestDTO request) {
 //        try {

@@ -223,5 +223,23 @@ public class ExpenseService {
         }).collect(Collectors.toList());
     }
 
+    public Map<String, Object> getExpenseById(Long tripId, Long expenseId) {
+
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 여행이 존재하지 않습니다: " + tripId));
+        Expense expense = expenseRepository.findById(expenseId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 지출이 존재하지 않습니다: " + expenseId));
+
+        Map<String, Object> expenseDetails = new HashMap<>();
+        expenseDetails.put("tripName", trip.getName());  // 여행 이름
+        expenseDetails.put("expenseDate", expense.getExpenseDate().toString());
+        expenseDetails.put("title", expense.getTitle());
+        expenseDetails.put("amount", expense.getAmount());
+        expenseDetails.put("expenseImage", expense.getExpenseImageUrl());  // 지출 이미지 URL
+        expenseDetails.put("memo", expense.getMemo());
+
+        return expenseDetails;
+    }
+
 
 }
