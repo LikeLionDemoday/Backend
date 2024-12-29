@@ -116,6 +116,8 @@ public class DutchService {
 
                     // 잔액 갱신
                     payeeBalance -= amountToPay;
+                    payerBalance += amountToPay;
+
                     memberBalances.put(payee, payeeBalance);
                     memberBalances.put(payer, payerBalance);
                 }
