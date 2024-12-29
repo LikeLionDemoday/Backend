@@ -8,10 +8,10 @@ import com.Dodutch_Server.domain.dutch.service.DutchService;
 import com.Dodutch_Server.domain.trip.entity.TripMember;
 import com.Dodutch_Server.domain.trip.repository.TripMemberRepository;
 import com.Dodutch_Server.domain.trip.repository.TripRepository;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +37,7 @@ public class DutchController {
     public ResponseEntity<?> getAllDutchList() {
         Long memberId = SecurityUtil.getCurrentUserId();
 
-        List<Dutch> dutchList = dutchRepository.findByPayerIdOrPayeeId(memberId, memberId);
+        List<Dutch> dutchList = dutchRepository.findByPayerIdOrPayeeIdOrderByCreatedAtDesc(memberId, memberId);
 
         List<DutchResponseDTO> responseDTOs = dutchList.stream()
                 .map(DutchResponseDTO::fromEntity)
@@ -160,21 +160,45 @@ public class DutchController {
     @Setter
     public static class DutchResponseDTO {
         private Long id;
-        private Long payerId;
-        private Long payeeId;
+        private PayerInfo payer;
+        private PayeeInfo payee;
         private Integer perCost;
         private Boolean isCompleted;
+
+        @Data
+        public static class PayerInfo {
+            private Long payerId;
+            private String payerNickName;
+        }
+
+        @Data
+        public static class PayeeInfo {
+            private Long payeeId;
+            private String payeeNickName;
+        }
 
         public static DutchResponseDTO fromEntity(Dutch dutch) {
             DutchResponseDTO dto = new DutchResponseDTO();
             dto.setId(dutch.getId());
-            dto.setPayerId(dutch.getPayer() != null ? dutch.getPayer().getId() : null);
-            dto.setPayeeId(dutch.getPayee() != null ? dutch.getPayee().getId() : null);
             dto.setPerCost(dutch.getPerCost());
             dto.setIsCompleted(dutch.getIsCompleted());
+
+            // Payer 정보
+            PayerInfo payerInfo = new PayerInfo();
+            payerInfo.setPayerId(dutch.getPayer().getId());
+            payerInfo.setPayerNickName(dutch.getPayer().getNickName());
+            dto.setPayer(payerInfo);
+
+            // Payee 정보
+            PayeeInfo payeeInfo = new PayeeInfo();
+            payeeInfo.setPayeeId(dutch.getPayee().getId());
+            payeeInfo.setPayeeNickName(dutch.getPayee().getNickName());
+            dto.setPayee(payeeInfo);
+
             return dto;
         }
     }
+
 
     @Getter
     @Setter
