@@ -16,7 +16,7 @@ public class TripResponse {
     private String place;       // 장소
     private Long budget;        // 예산
     private Integer totalCost; // 추가함
-    private String memo;
+    //private String memo;
 
     private List<MemberDTO> members; // 멤버 리스트 추가
 
