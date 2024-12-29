@@ -40,7 +40,7 @@ public class DutchController {
         List<Dutch> dutchList = dutchRepository.findByPayerIdOrPayeeIdOrderByCreatedAtDesc(memberId, memberId);
 
         List<DutchResponseDTO> responseDTOs = dutchList.stream()
-                .map(DutchResponseDTO::fromEntity)
+                .map(dutch -> DutchResponseDTO.fromEntity(dutch, memberId))
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(
                 new ApiResponse<>(true, "200", "성공", Map.of("dutch", responseDTOs))
@@ -64,7 +64,7 @@ public class DutchController {
 
 
         List<DutchResponseDTO> responseDTOs = dutchList.stream()
-                .map(DutchResponseDTO::fromEntity)
+                .map(dutch -> DutchResponseDTO.fromEntity(dutch, memberId))
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(
                 new ApiResponse<>(true, "200", "성공", Map.of("dutch", responseDTOs))
@@ -82,7 +82,9 @@ public class DutchController {
         Optional<Dutch> dutch = dutchRepository.findByTripIdAndId(tripId, dutchId);
 
         if (dutch.isPresent()) {
-            DutchResponseDTO responseDTO = DutchResponseDTO.fromEntity(dutch.get());
+            Long memberId = SecurityUtil.getCurrentUserId();
+
+            DutchResponseDTO responseDTO = DutchResponseDTO.fromEntity(dutch.get(), memberId);
             return ResponseEntity.ok().body(
                     new ApiResponse<>(true, "200", "성공", responseDTO)
             );
@@ -106,7 +108,8 @@ public class DutchController {
             dutch.setIsCompleted(request.getIsCompleted());
             dutchRepository.save(dutch);
 
-            DutchResponseDTO responseDTO = DutchResponseDTO.fromEntity(dutch);
+            Long memberId = SecurityUtil.getCurrentUserId();
+            DutchResponseDTO responseDTO = DutchResponseDTO.fromEntity(dutch, memberId);
 
             return ResponseEntity.ok().body(
                     new ApiResponse<>(true, "200", "성공", responseDTO)
@@ -160,6 +163,7 @@ public class DutchController {
     @Setter
     public static class DutchResponseDTO {
         private Long id;
+        private Long memberId;
         private PayerInfo payer;
         private PayeeInfo payee;
         private Integer perCost;
@@ -177,9 +181,10 @@ public class DutchController {
             private String payeeNickName;
         }
 
-        public static DutchResponseDTO fromEntity(Dutch dutch) {
+        public static DutchResponseDTO fromEntity(Dutch dutch, Long memberId) {
             DutchResponseDTO dto = new DutchResponseDTO();
             dto.setId(dutch.getId());
+            dto.setMemberId(memberId);
             dto.setPerCost(dutch.getPerCost());
             dto.setIsCompleted(dutch.getIsCompleted());
 
