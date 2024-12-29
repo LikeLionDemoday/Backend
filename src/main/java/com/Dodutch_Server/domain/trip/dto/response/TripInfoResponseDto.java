@@ -1,6 +1,7 @@
 package com.Dodutch_Server.domain.trip.dto.response;
 
 import lombok.*;
+import org.joda.time.DateTime;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -34,5 +35,9 @@ public class TripInfoResponseDto {
     @Setter
     public static class PhotoDTO {
         private String photoUrl;
+        private LocalDate expenseDate;
+        private String title;
+        private Integer amount;
+        private String memo;
     }
 }
