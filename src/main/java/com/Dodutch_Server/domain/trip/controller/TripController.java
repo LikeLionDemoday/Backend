@@ -83,7 +83,7 @@ public class TripController {
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
     })
-    public ApiResponse<Object> updateTrip(@PathVariable Long tripId, @RequestBody TripUpdateRequestDTO request) {
+    public ApiResponse<Object> updateTrip(@PathVariable("tripId") Long tripId, @RequestBody TripUpdateRequestDTO request) {
 
         tripService.updateTrip(tripId, request);
 

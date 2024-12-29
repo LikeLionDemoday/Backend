@@ -71,6 +71,7 @@ public class ExpenseController {
     public ResponseDTO<ExpenseResponseDTO> getExpensesByTrip(@PathVariable("tripId") Long tripId) {
         try {
             ExpenseResponseDTO responseData = expenseService.getExpensesByTrip(tripId);
+
             return createSuccessResponse("200", "성공이요", responseData);
         } catch (IllegalArgumentException e) {
             return createErrorResponse("400", e.getMessage());
@@ -79,8 +80,8 @@ public class ExpenseController {
 
     @GetMapping("/{tripId}/expense/{expenseId}")
     public ResponseDTO<Map<String, Object>> getExpenseById(
-            @PathVariable Long tripId,
-            @PathVariable Long expenseId) {
+            @PathVariable("tripId") Long tripId,
+            @PathVariable("tripId") Long expenseId) {
         try {
             Map<String, Object> expenseDetails = expenseService.getExpenseById(tripId, expenseId);
 

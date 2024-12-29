@@ -1,5 +1,6 @@
 package com.Dodutch_Server.domain.dutch.controller;
 
+import com.Dodutch_Server.domain.auth.util.SecurityUtil;
 import com.Dodutch_Server.domain.dutch.dto.DutchDTO;
 import com.Dodutch_Server.domain.dutch.entity.Dutch;
 import com.Dodutch_Server.domain.dutch.repository.DutchRepository;
@@ -34,8 +35,11 @@ public class DutchController {
 
     @GetMapping("/dutch")
     public ResponseEntity<?> getAllDutchList() {
-        List<DutchResponseDTO> responseDTOs = dutchRepository.findAll(Sort.by(Sort.Order.desc("createdAt")))
-                .stream()
+        Long memberId = SecurityUtil.getCurrentUserId();
+
+        List<Dutch> dutchList = dutchRepository.findByPayerIdOrPayeeId(memberId, memberId);
+
+        List<DutchResponseDTO> responseDTOs = dutchList.stream()
                 .map(DutchResponseDTO::fromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(
@@ -51,8 +55,15 @@ public class DutchController {
             );
         }
 
-        List<DutchResponseDTO> responseDTOs = dutchRepository.findByTripId(tripId)
-                .stream()
+        Long memberId = SecurityUtil.getCurrentUserId();
+
+        List<Dutch> dutchList = dutchRepository.findByTripId(tripId).stream()
+                .filter(dutch -> dutch.getPayer().getId().equals(memberId) ||
+                                 dutch.getPayee().getId().equals(memberId))
+                .collect(Collectors.toList());
+
+
+        List<DutchResponseDTO> responseDTOs = dutchList.stream()
                 .map(DutchResponseDTO::fromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(
@@ -69,6 +80,7 @@ public class DutchController {
         }
 
         Optional<Dutch> dutch = dutchRepository.findByTripIdAndId(tripId, dutchId);
+
         if (dutch.isPresent()) {
             DutchResponseDTO responseDTO = DutchResponseDTO.fromEntity(dutch.get());
             return ResponseEntity.ok().body(
@@ -106,7 +118,7 @@ public class DutchController {
     }
 
     @PostMapping("/trip/{tripId}/dutch/calculate")
-    public ResponseEntity<?> calculateDutch(@PathVariable Long tripId) {
+    public ResponseEntity<?> calculateDutch(@PathVariable("tripId") Long tripId) {
         if (!isValidTrip(tripId)) {
             return ResponseEntity.status(404).body(
                     new ApiResponse<>(false, "404", "해당 여행이 존재하지 않습니다", null)

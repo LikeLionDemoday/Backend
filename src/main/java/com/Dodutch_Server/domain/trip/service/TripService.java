@@ -171,6 +171,10 @@ public class TripService {
                 .map(expense -> {
                     TripInfoResponseDto.PhotoDTO photoDTO = new TripInfoResponseDto.PhotoDTO();
                     photoDTO.setPhotoUrl(expense.getExpenseImageUrl());
+                    photoDTO.setExpenseDate(expense.getExpenseDate());
+                    photoDTO.setTitle(expense.getTitle());
+                    photoDTO.setAmount(expense.getAmount());
+                    photoDTO.setMemo(expense.getMemo());
                     return photoDTO;
                 })
                 .collect(Collectors.toList());
