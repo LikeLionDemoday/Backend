@@ -1,9 +1,12 @@
 package com.Dodutch_Server.domain.trip.entity;
 
+import com.Dodutch_Server.domain.expense.entity.ExpenseMember;
 import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -23,4 +26,5 @@ public class TripMember extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "tripId", nullable = false)
     private Trip trip;
+
 }
