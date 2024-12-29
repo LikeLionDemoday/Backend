@@ -25,6 +25,7 @@ public class Expense extends BaseEntity {
     private Long id;
     private String title;
     private int amount;
+
     @Enumerated(EnumType.STRING)
     private ExpenseCategory expenseCategory;
     private LocalDate expenseDate;

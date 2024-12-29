@@ -174,39 +174,40 @@ public class ExpenseService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 여행이 존재하지 않습니다: " + tripId));
 
-        // 남은 비용 계산
+        List<Expense> expenses = expenseRepository.findByTripId(tripId);
+
+        Map<ExpenseCategory, Integer> categoryCosts = new HashMap<>();
+        for (Expense expense : expenses) {
+            categoryCosts.put(expense.getExpenseCategory(),
+                    categoryCosts.getOrDefault(expense.getExpenseCategory(), 0) + expense.getAmount());
+        }
+
         int remainingCost = (trip.getBudget() != null ? trip.getBudget() : 0) -
                 (trip.getTotalCost() != null ? trip.getTotalCost() : 0);
 
-        // 카테고리별 비용 계산
-        List<ExpenseResponseDTO.CategoryCostDTO> categories = expenseRepository.findCategoryCostsByTripId(tripId)
-                .stream()
-                .map(result -> {
-                    ExpenseResponseDTO.CategoryCostDTO dto = new ExpenseResponseDTO.CategoryCostDTO();
-                    dto.setExpenseCategory((ExpenseCategory) result.get("category"));
-                    dto.setCost(((Number) result.get("cost")).intValue());
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        List<ExpenseResponseDTO.CategoryCostDTO> categories = categoryCosts.entrySet().stream()
+                .map(entry -> {
+                    ExpenseResponseDTO.CategoryCostDTO categoryCostDTO = new ExpenseResponseDTO.CategoryCostDTO();
+                    categoryCostDTO.setExpenseCategory(entry.getKey());
+                    categoryCostDTO.setCost(entry.getValue());
+                    return categoryCostDTO;
+                }).collect(Collectors.toList());
 
-        // 멤버 정보 조회
         List<ExpenseResponseDTO.MemberDTO> members = tripMemberRepository.findByTripId(tripId).stream()
                 .map(tripMember -> {
                     ExpenseResponseDTO.MemberDTO memberDTO = new ExpenseResponseDTO.MemberDTO();
                     memberDTO.setMemberId(tripMember.getMember().getId());
                     memberDTO.setNickName(tripMember.getMember().getNickName());
                     return memberDTO;
-                })
-                .collect(Collectors.toList());
+                }).collect(Collectors.toList());
 
-        ExpenseResponseDTO response = new ExpenseResponseDTO();
-        response.setRemainingCost(remainingCost);
-        response.setCategories(categories);
-        response.setMembers(members);
-        response.setBudget(trip.getBudget()); //budget 추가함
+        ExpenseResponseDTO responseDTO = new ExpenseResponseDTO();
+        responseDTO.setBudget(trip.getBudget());
+        responseDTO.setRemainingCost(remainingCost);
+        responseDTO.setCategories(categories);
+        responseDTO.setMembers(members);
 
-
-        return response;
+        return responseDTO;
     }
 
     public List<Map<String, Object>> getExpensesByDate(Long tripId) {
