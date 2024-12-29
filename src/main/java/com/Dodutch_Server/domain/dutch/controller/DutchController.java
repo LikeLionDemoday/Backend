@@ -37,7 +37,7 @@ public class DutchController {
     public ResponseEntity<?> getAllDutchList() {
         Long memberId = SecurityUtil.getCurrentUserId();
 
-        List<Dutch> dutchList = dutchRepository.findByPayerIdOrPayeeId(memberId, memberId);
+        List<Dutch> dutchList = dutchRepository.findByPayerIdOrPayeeIdOrderByCreatedAtDesc(memberId, memberId);
 
         List<DutchResponseDTO> responseDTOs = dutchList.stream()
                 .map(DutchResponseDTO::fromEntity)
