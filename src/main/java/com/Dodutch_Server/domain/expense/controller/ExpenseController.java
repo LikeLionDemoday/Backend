@@ -68,7 +68,7 @@ public class ExpenseController {
 
 
     @GetMapping("/{tripId}/expense")
-    public ResponseDTO<ExpenseResponseDTO> getExpensesByTrip(@PathVariable Long tripId) {
+    public ResponseDTO<ExpenseResponseDTO> getExpensesByTrip(@PathVariable("tripId") Long tripId) {
         try {
             ExpenseResponseDTO responseData = expenseService.getExpensesByTrip(tripId);
             return createSuccessResponse("200", "성공이요", responseData);

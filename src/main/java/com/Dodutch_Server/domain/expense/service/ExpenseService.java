@@ -17,6 +17,7 @@ import com.Dodutch_Server.domain.uuid.repository.UuidRepository;
 import com.Dodutch_Server.global.common.apiPayload.code.status.ErrorStatus;
 import com.Dodutch_Server.global.common.exception.handler.ErrorHandler;
 import com.Dodutch_Server.global.config.aws.AmazonS3Manager;
+import com.Dodutch_Server.global.enums.ExpenseCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -182,7 +183,7 @@ public class ExpenseService {
                 .stream()
                 .map(result -> {
                     ExpenseResponseDTO.CategoryCostDTO dto = new ExpenseResponseDTO.CategoryCostDTO();
-                    dto.setCategory((String) result.get("category"));
+                    dto.setExpenseCategory((ExpenseCategory) result.get("category"));
                     dto.setCost(((Number) result.get("cost")).intValue());
                     return dto;
                 })

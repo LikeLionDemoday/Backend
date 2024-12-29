@@ -1,5 +1,6 @@
 package com.Dodutch_Server.domain.expense.dto;
 
+import com.Dodutch_Server.global.enums.ExpenseCategory;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +17,7 @@ public class ExpenseResponseDTO {
     @Getter
     @Setter
     public static class CategoryCostDTO {
-        private String category;
+        private ExpenseCategory expenseCategory;
         private int cost;
     }
 

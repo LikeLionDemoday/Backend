@@ -18,6 +18,7 @@ public class TripInfoResponseDto {
     private String place;       // 장소
     private Integer budget;        // 예산
     private Integer totalCost; // 추가함
+    private String tripImageUrl; // 여행 대표사진
 
     private List<MemberDTO> members; // 멤버 리스트 추가
     private List<PhotoDTO> photos;

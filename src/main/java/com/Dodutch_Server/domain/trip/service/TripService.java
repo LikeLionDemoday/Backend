@@ -152,6 +152,7 @@ public class TripService {
                 .place(trip.getPlace())
                 .budget(trip.getBudget())
                 .totalCost(trip.getTotalCost())
+                .tripImageUrl(trip.getTripImageUrl())
                 .build();
 
         // TripMember에서 Member 정보 추출 (memberId와 nickName)
