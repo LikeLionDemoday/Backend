@@ -60,14 +60,13 @@ public class SecurityConfig {
 
         http.cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
             CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedOrigins(Collections.singletonList("*"));
-            config.setAllowedMethods(Collections.singletonList("*"));
-            config.setAllowCredentials(true);
-            config.setAllowedHeaders(Collections.singletonList("*"));
-            config.setMaxAge(3600L);
+            config.setAllowedOrigins(Collections.singletonList("http://localhost:3000")); // 허용할 도메인
+            config.setAllowedMethods(Collections.singletonList("*")); // 모든 메서드 허용
+            config.setAllowCredentials(true); // 인증 정보 허용
+            config.setAllowedHeaders(Collections.singletonList("*")); // 모든 헤더 허용
+            config.setMaxAge(3600L); // Preflight 요청 캐싱 시간 (초 단위)
             return config;
         }));
-
 
 
 

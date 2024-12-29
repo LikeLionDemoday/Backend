@@ -79,8 +79,8 @@ public class ExpenseController {
 
     @GetMapping("/{tripId}/expense/{expenseId}")
     public ResponseDTO<Map<String, Object>> getExpenseById(
-            @PathVariable Long tripId,
-            @PathVariable Long expenseId) {
+            @PathVariable("tripId") Long tripId,
+            @PathVariable("tripId") Long expenseId) {
         try {
             Map<String, Object> expenseDetails = expenseService.getExpenseById(tripId, expenseId);
 
