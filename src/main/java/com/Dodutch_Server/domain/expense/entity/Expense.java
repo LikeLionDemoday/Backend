@@ -30,7 +30,6 @@ public class Expense extends BaseEntity {
     private LocalDate expenseDate;
     private String memo;
     private String expenseImageUrl;
-    private Long payerId;
 
     @ManyToOne
     @JoinColumn(name = "payer", nullable = true)
