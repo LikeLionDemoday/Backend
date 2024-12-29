@@ -84,7 +84,7 @@ public class ExpenseService {
                 .amount(request.getAmount())
                 .expenseDate(request.getExpenseDate())
                 .memo(request.getMemo())
-                .payer(payer)
+                //.payer(payer)
                 .trip(trip)
                 .expenseImageUrl(expenseImageUrl)
                 .build();
@@ -202,6 +202,8 @@ public class ExpenseService {
         response.setRemainingCost(remainingCost);
         response.setCategories(categories);
         response.setMembers(members);
+        response.setBudget(trip.getBudget()); //budget 추가함
+
 
         return response;
     }

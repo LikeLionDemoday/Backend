@@ -30,9 +30,9 @@ public class Expense extends BaseEntity {
     private String memo;
     private String expenseImageUrl;
 
-    @ManyToOne
-    @JoinColumn(name = "payer", nullable = true)
-    private Member payer;
+//    @ManyToOne
+//    @JoinColumn(name = "payer", nullable = true)
+//    private Member payer;
 
     //추가
     @ManyToOne

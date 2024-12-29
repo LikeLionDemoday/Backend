@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 @Setter
 public class ExpenseResponseDTO {
+    private Integer budget;
     private int remainingCost;
     private List<CategoryCostDTO> categories;
     private List<MemberDTO> members;
