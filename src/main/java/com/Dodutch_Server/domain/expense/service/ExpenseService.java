@@ -85,7 +85,7 @@ public class ExpenseService {
                 .amount(request.getAmount())
                 .expenseDate(request.getExpenseDate())
                 .memo(request.getMemo())
-                //.payer(payer)
+                .payerId(payerId)
                 .trip(trip)
                 .expenseImageUrl(expenseImageUrl)
                 .build();

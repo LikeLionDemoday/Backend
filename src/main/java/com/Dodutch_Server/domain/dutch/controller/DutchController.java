@@ -106,7 +106,7 @@ public class DutchController {
     }
 
     @PostMapping("/trip/{tripId}/dutch/calculate")
-    public ResponseEntity<?> calculateDutch(@PathVariable Long tripId) {
+    public ResponseEntity<?> calculateDutch(@PathVariable("tripId") Long tripId) {
         if (!isValidTrip(tripId)) {
             return ResponseEntity.status(404).body(
                     new ApiResponse<>(false, "404", "해당 여행이 존재하지 않습니다", null)
