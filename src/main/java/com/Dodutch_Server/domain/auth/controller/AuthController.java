@@ -4,6 +4,7 @@ import com.Dodutch_Server.domain.auth.dto.request.KakaoRequestDto;
 import com.Dodutch_Server.domain.auth.dto.request.RefreshRequestDto;
 import com.Dodutch_Server.domain.auth.dto.request.SignUpRequestDto;
 import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
+import com.Dodutch_Server.domain.auth.dto.response.LoginResponseDto;
 import com.Dodutch_Server.domain.auth.dto.response.RefreshResponseDto;
 import com.Dodutch_Server.domain.auth.service.AuthService;
 import com.Dodutch_Server.global.common.apiPayload.ApiResponse;
@@ -44,11 +45,11 @@ public class AuthController {
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
     })
-    public ApiResponse<Object> signup(@RequestBody SignUpRequestDto signUpRequestDto) {
+    public ApiResponse<LoginResponseDto> signup(@RequestBody SignUpRequestDto signUpRequestDto) {
 
-        authService.signup(signUpRequestDto);
+        LoginResponseDto loginResponseDto = authService.signup(signUpRequestDto);
 
-        return ApiResponse.onSuccess();
+        return ApiResponse.onSuccess(loginResponseDto);
     }
 
     // 리프레시 토큰으로 액세스토큰 재발급 받는 로직

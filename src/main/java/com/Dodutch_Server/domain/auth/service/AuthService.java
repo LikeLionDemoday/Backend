@@ -5,6 +5,7 @@ import com.Dodutch_Server.domain.auth.dto.KakaoMemberAndExistDto;
 import com.Dodutch_Server.domain.auth.dto.request.RefreshRequestDto;
 import com.Dodutch_Server.domain.auth.dto.request.SignUpRequestDto;
 import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
+import com.Dodutch_Server.domain.auth.dto.response.LoginResponseDto;
 import com.Dodutch_Server.domain.auth.dto.response.RefreshResponseDto;
 import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.member.repository.MemberRepository;
@@ -156,7 +157,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void signup(SignUpRequestDto signUpRequestDto){
+    public LoginResponseDto signup(SignUpRequestDto signUpRequestDto){
         String nickName = signUpRequestDto.getNickName();
         String accessToken = signUpRequestDto.getAccessToken();
 
@@ -172,6 +173,11 @@ public class AuthService {
         }
 
         member.setNickName(nickName);
+
+        LoginResponseDto loginResponseDto = LoginResponseDto.builder()
+                .memberId(member.getId())
+                .build();
+        return loginResponseDto;
 
     }
 
