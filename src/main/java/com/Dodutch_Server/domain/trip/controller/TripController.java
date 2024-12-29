@@ -4,8 +4,10 @@ import com.Dodutch_Server.domain.auth.dto.response.KakaoResponseDto;
 import com.Dodutch_Server.domain.auth.util.SecurityUtil;
 import com.Dodutch_Server.domain.trip.dto.request.TripJoinRequestDto;
 import com.Dodutch_Server.domain.trip.dto.request.TripUpdateRequestDTO;
+import com.Dodutch_Server.domain.trip.dto.response.TripInfoResponseDto;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponse;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponseDTO;
+import com.Dodutch_Server.domain.trip.dto.response.TripShareResponseDto;
 import com.Dodutch_Server.domain.trip.util.RandomStringGenerator;
 import com.Dodutch_Server.domain.trip.repository.TripRepository;
 import com.Dodutch_Server.global.common.ResponseDTO;
@@ -29,9 +31,6 @@ import java.util.Map;
 public class TripController {
 
     private final TripService tripService;
-    private final TripRepository tripRepository;
-
-
     @PostMapping
     @Operation(summary = "여행 생성 API")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
@@ -62,7 +61,7 @@ public class TripController {
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
     })
-    public ApiResponse<TripResponseDTO> getTripInfo(@PathVariable Long tripId) {
+    public ApiResponse<TripShareResponseDto> getShareTrip(@PathVariable("tripId") Long tripId) {
 
         return ApiResponse.onSuccess(tripService.convertToTripResponse(tripId));
 
@@ -73,9 +72,9 @@ public class TripController {
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
     })
-    public ApiResponse<TripResponse>getTrip(@PathVariable Long tripId) {
-        TripResponse tripResponse = tripService.getTripResponseById(tripId);
-        return ApiResponse.onSuccess(tripResponse);
+    public ApiResponse<TripInfoResponseDto>getTripInfo(@PathVariable("tripId") Long tripId) {
+        TripInfoResponseDto tripInfoResponseDto = tripService.getTripResponseById(tripId);
+        return ApiResponse.onSuccess(tripInfoResponseDto);
     }
 
 
@@ -97,13 +96,9 @@ public class TripController {
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200", description = "OK, 성공")
     })
-    public ResponseDTO<Object> deleteTrip(@PathVariable Long tripId) {
-        try {
-            tripService.deleteTrip(tripId);
-            return createSuccessResponse("200", "삭제 성공", null); // data를 null로 반환
-        } catch (IllegalArgumentException e) {
-            return createErrorResponse("404", "존재하지 않는 여행입니다");
-        }
+    public ApiResponse<Object> deleteTrip(@PathVariable("tripId") Long tripId) {
+        tripService.deleteTrip(tripId);
+        return ApiResponse.onSuccess();
     }
 
     @GetMapping("/search")
@@ -117,25 +112,5 @@ public class TripController {
 
         return ApiResponse.onSuccess(trips);
     }
-
-    // 공통 응답 생성 메소드 (성공)
-    private <T> ResponseDTO<T> createSuccessResponse(String code, String message, T data) {
-        ResponseDTO<T> response = new ResponseDTO<>();
-        response.setIsSuccess(true);
-        response.setCode(code);
-        response.setMessage(message);
-        response.setData(data);
-        return response;
-    }
-
-    // 공통 응답 생성 메소드 (실패)
-    private <T> ResponseDTO<T> createErrorResponse(String code, String message) {
-        ResponseDTO<T> response = new ResponseDTO<>();
-        response.setIsSuccess(false);
-        response.setCode(code);
-        response.setMessage(message);
-        return response;
-    }
-
 
 }

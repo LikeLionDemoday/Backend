@@ -5,8 +5,10 @@ import com.Dodutch_Server.domain.member.repository.MemberRepository;
 import com.Dodutch_Server.domain.member.entity.Member;
 import com.Dodutch_Server.domain.trip.dto.request.TripRequestDTO;
 import com.Dodutch_Server.domain.trip.dto.request.TripUpdateRequestDTO;
+import com.Dodutch_Server.domain.trip.dto.response.TripInfoResponseDto;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponse;
 import com.Dodutch_Server.domain.trip.dto.response.TripResponseDTO;
+import com.Dodutch_Server.domain.trip.dto.response.TripShareResponseDto;
 import com.Dodutch_Server.domain.trip.entity.Trip;
 import com.Dodutch_Server.domain.trip.entity.TripMember;
 import com.Dodutch_Server.domain.trip.repository.TripMemberRepository;
@@ -102,10 +104,10 @@ public class TripService {
     }
 
 
-    public TripResponseDTO convertToTripResponse(Long tripId) {
+    public TripShareResponseDto convertToTripResponse(Long tripId) {
         Trip findTrip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.TRIP_NOT_EXIST));
-        return TripResponseDTO.builder()
+        return TripShareResponseDto.builder()
                 .tripImageUrl(findTrip.getTripImageUrl())
                 .startDate(findTrip.getStartDate())
                 .endDate(findTrip.getEndDate())
@@ -139,10 +141,50 @@ public class TripService {
         return tripResponse;
     }
 
-    public TripResponse getTripResponseById(Long tripId) {
+
+    public TripInfoResponseDto convertToTripInfoResponse(Trip trip) {
+
+        TripInfoResponseDto tripInfoResponseDto = TripInfoResponseDto.builder()
+                .tripId(trip.getId())
+                .tripName(trip.getName())
+                .startDate(trip.getStartDate())
+                .endDate(trip.getEndDate())
+                .place(trip.getPlace())
+                .budget(trip.getBudget())
+                .totalCost(trip.getTotalCost())
+                .build();
+
+        // TripMember에서 Member 정보 추출 (memberId와 nickName)
+        List<TripInfoResponseDto.MemberDTO> memberDTOList = trip.getTripMembers().stream()
+                .map(tripMember -> {
+                    TripInfoResponseDto.MemberDTO memberDTO = new TripInfoResponseDto.MemberDTO();
+                    memberDTO.setMemberId(tripMember.getMember().getId());
+                    memberDTO.setNickName(tripMember.getMember().getNickName());
+                    return memberDTO;
+                })
+                .collect(Collectors.toList());
+
+        // Expense에서 expenseImageUrl 추출하여 PhotoDTO 생성
+        List<TripInfoResponseDto.PhotoDTO> photoDTOList = trip.getExpenses().stream()
+                .filter(expense -> expense.getExpenseImageUrl() != null) // 이미지 URL이 존재하는 경우만 필터링
+                .map(expense -> {
+                    TripInfoResponseDto.PhotoDTO photoDTO = new TripInfoResponseDto.PhotoDTO();
+                    photoDTO.setPhotoUrl(expense.getExpenseImageUrl());
+                    return photoDTO;
+                })
+                .collect(Collectors.toList());
+
+
+        tripInfoResponseDto.setMembers(memberDTOList);
+        tripInfoResponseDto.setPhotos(photoDTOList);
+
+        return tripInfoResponseDto;
+    }
+
+    public TripInfoResponseDto getTripResponseById(Long tripId) {
         Trip findTrip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.TRIP_NOT_EXIST));
-        return convertToTripResponseV2(findTrip); // Trip -> TripResponse 변환
+        return convertToTripInfoResponse(findTrip); // Trip -> TripResponse 변환
     }
 
 
