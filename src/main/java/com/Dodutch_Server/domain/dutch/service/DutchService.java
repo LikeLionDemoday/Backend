@@ -129,8 +129,6 @@ public class DutchService {
 
     @Transactional
     public void saveSettlementToDatabase(Long tripId, List<DutchDTO> dutchDTOs) {
-        // 여행 프로젝트의 기존 정산 내역 삭제
-        dutchRepository.deleteByTripId(tripId);
 
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new IllegalArgumentException("TripId not found"));
