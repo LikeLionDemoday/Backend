@@ -127,7 +127,6 @@ public class DutchService {
         return dutchDTOs;
     }
 
-    @Transactional
     public void saveSettlementToDatabase(Long tripId, List<DutchDTO> dutchDTOs) {
 
         Trip trip = tripRepository.findById(tripId)
