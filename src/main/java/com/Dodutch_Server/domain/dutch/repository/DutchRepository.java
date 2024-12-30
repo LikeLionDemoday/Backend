@@ -10,7 +10,8 @@ import java.util.Optional;
 public interface DutchRepository extends JpaRepository<Dutch, Long> {
     List<Dutch> findByTripId(Long tripId);
     Optional<Dutch> findByTripIdAndId(Long tripId, Long id);
-    boolean existsByTripIdAndPayerIdAndPayeeIdAndPerCost(Long tripId, Long payerId, Long payeeId, Integer perCost);
+    boolean existsByTripIdAndPayerIdAndPayeeId(Long tripId, Long payerId, Long payeeId);
     List<Dutch> findByPayerIdOrPayeeId(Long payerId, Long payeeId);
     List<Dutch> findByPayerIdOrPayeeIdOrderByCreatedAtDesc(Long payerId, Long payeeId);
+    void deleteByTripId(Long tripId);
 }

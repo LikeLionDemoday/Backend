@@ -13,6 +13,7 @@ import com.Dodutch_Server.domain.trip.entity.Trip;
 import com.Dodutch_Server.domain.trip.entity.TripMember;
 import com.Dodutch_Server.domain.trip.repository.TripMemberRepository;
 import com.Dodutch_Server.domain.trip.repository.TripRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -126,8 +127,11 @@ public class DutchService {
         return dutchDTOs;
     }
 
-
+    @Transactional
     public void saveSettlementToDatabase(Long tripId, List<DutchDTO> dutchDTOs) {
+        // 여행 프로젝트의 기존 정산 내역 삭제
+        dutchRepository.deleteByTripId(tripId);
+
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new IllegalArgumentException("TripId not found"));
 
@@ -137,26 +141,20 @@ public class DutchService {
             Member payee = memberRepository.findById(dutchDTO.getPayee())
                     .orElseThrow(() -> new IllegalArgumentException("Payee not found"));
 
-            // 중복된 Dutch 데이터가 존재하는지 확인하기
-            boolean isExistingDutch = dutchRepository.existsByTripIdAndPayerIdAndPayeeIdAndPerCost(
-                    tripId, payer.getId(), payee.getId(), dutchDTO.getAmountToPay()
-            );
+            // TripMember 확인
+            TripMember tripMember = tripMemberRepository.findByTripIdAndMemberId(trip.getId(), payer.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("TripMember not found for payer"));
 
-            // 중복이 없을 때만 새로 저장하기
-            if (!isExistingDutch) {
-                TripMember tripMember = tripMemberRepository.findByTripIdAndMemberId(trip.getId(), payer.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("TripMember not found for payer"));
+            // Dutch Entity 생성 및 저장
+            Dutch dutch = new Dutch();
+            dutch.setTrip(trip);
+            dutch.setTripMember(tripMember);
+            dutch.setPayer(payer);
+            dutch.setPayee(payee);
+            dutch.setPerCost(dutchDTO.getAmountToPay());
+            dutch.setIsCompleted(false);
+            dutchRepository.save(dutch);
 
-                // Dutch Entity 생성 및 저장
-                Dutch dutch = new Dutch();
-                dutch.setTrip(trip);
-                dutch.setTripMember(tripMember);
-                dutch.setPayer(payer);
-                dutch.setPayee(payee);
-                dutch.setPerCost(dutchDTO.getAmountToPay());
-                dutch.setIsCompleted(false);
-                dutchRepository.save(dutch);
-            }
         }
     }
 }
